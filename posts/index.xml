@@ -1,0 +1,15 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>All Posts - Solar1s&#39; Blog</title>
+        <link>http://example.org/posts/</link>
+        <description>All Posts | Solar1s&#39; Blog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Thu, 23 Mar 2023 15:23:18 &#43;0800</lastBuildDate><atom:link href="http://example.org/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>AI &#43; Productivity Tool Collections</title>
+    <link>http://example.org/posts/ai_&#43;_productivity_tool_collections/</link>
+    <pubDate>Thu, 23 Mar 2023 15:23:18 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/posts/ai_&#43;_productivity_tool_collections/</guid>
+    <description><![CDATA[<p>收集各种AI+生产力工具，持续更新ing</p>]]></description>
+</item>
+</channel>
+</rss>
