@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
-        <title>Java 安全研究初探 - Solar1s&#39; Blog</title><meta name="Description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充"><meta property="og:title" content="Java 安全研究初探" />
+        <title>Java Web 安全研究初探 - Solar1s&#39; Blog</title><meta name="Description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充"><meta property="og:title" content="Java Web 安全研究初探" />
 <meta property="og:description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://example.org/posts/a_first_look_at_java_web_security_research/" />
@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
 
-<meta name="twitter:title" content="Java 安全研究初探"/>
+<meta name="twitter:title" content="Java Web 安全研究初探"/>
 <meta name="twitter:description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充"/>
 <meta name="application-name" content="Solar1s&#39; Personal Blog">
 <meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/a_first_look_at_java_web_security_research/" /><link rel="prev" href="http://example.org/posts/ai_&#43;_productivity_tool_collections/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -23,7 +23,7 @@
     {
         "@context": "http://schema.org",
         "@type": "BlogPosting",
-        "headline": "Java 安全研究初探",
+        "headline": "Java Web 安全研究初探",
         "inLanguage": "zh-CN",
         "mainEntityOfPage": {
             "@type": "WebPage",
@@ -68,7 +68,7 @@
                 <div class="container"><div class="toc" id="toc-auto">
             <h2 class="toc-title">Contents</h2>
             <div class="toc-content" id="toc-content-auto"></div>
-        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Java 安全研究初探</h1><div class="post-meta">
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Java Web 安全研究初探</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-03">2023-04-03</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;21187 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;43 minutes&nbsp;</div>
@@ -1206,7 +1206,7 @@ PORT     STATE SERVICE  VERSION
         <div class="post-info-line">
             <div class="post-info-md"></div>
             <div class="post-info-share">
-                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探" data-via="@solaris_linus" data-hashtags="Java Web,Security"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java Web 安全研究初探" data-via="@solaris_linus" data-hashtags="Java Web,Security"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java Web 安全研究初探"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java Web 安全研究初探"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java Web 安全研究初探"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
             </div>
         </div>
     </div>
