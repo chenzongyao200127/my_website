@@ -3,7 +3,15 @@
         <title>All Posts - Solar1s&#39; Blog</title>
         <link>http://example.org/posts/</link>
         <description>All Posts | Solar1s&#39; Blog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Mon, 03 Apr 2023 17:03:10 &#43;0800</lastBuildDate><atom:link href="http://example.org/posts/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Mon, 03 Apr 2023 20:52:56 &#43;0800</lastBuildDate><atom:link href="http://example.org/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Prompt 工程学习记录</title>
+    <link>http://example.org/posts/prompt_learning_note/</link>
+    <pubDate>Mon, 03 Apr 2023 20:52:56 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/posts/prompt_learning_note/</guid>
+    <description><![CDATA[<p>Prompt工程是一种相对较新的学科，用于开发和优化提示，以便高效地使用语言模型（LM）进行各种应用和研究主题。在AGI飞速发展的背景下，Prompt工程技能有助于更好地理解大型语言模型（LLM）的能力和局限性。本文记录PE学习过程中的一些概念与技巧，将持续更新ing</p>]]></description>
+</item>
+<item>
     <title>Java Web 安全研究初探</title>
     <link>http://example.org/posts/a_first_look_at_java_web_security_research/</link>
     <pubDate>Mon, 03 Apr 2023 17:03:10 &#43;0800</pubDate>
