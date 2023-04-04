@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Rust 中的智能指针 - Solar1s&#39; Blog</title><meta name="Description" content="本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing"><meta property="og:title" content="Rust 中的智能指针" />
+<meta property="og:description" content="本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/posts/smart_points_in_rust/" />
+<meta property="og:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+<meta property="article:published_time" content="2023-04-04T10:15:03+08:00" />
+<meta property="article:modified_time" content="2023-04-04T10:15:03+08:00" /><meta property="og:site_name" content="Solar1s&#39; Personal Blog" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+
+<meta name="twitter:title" content="Rust 中的智能指针"/>
+<meta name="twitter:description" content="本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing"/>
+<meta name="application-name" content="Solar1s&#39; Personal Blog">
+<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/smart_points_in_rust/" /><link rel="prev" href="http://example.org/posts/prompt_learning_note/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Rust 中的智能指针",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/posts\/smart_points_in_rust\/"
+        },"genre": "posts","keywords": "Rust","wordcount":  5970 ,
+        "url": "http:\/\/example.org\/posts\/smart_points_in_rust\/","datePublished": "2023-04-04T10:15:03+08:00","dateModified": "2023-04-04T10:15:03+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Solar1s"
+            },"description": "本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing"
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><a class="menu-item" href="/about/"> 关于 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a class="menu-item" href="/about/" title="">关于</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Rust 中的智能指针</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/programming-languages/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Programming Languages</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-04">2023-04-04</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;5970 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;12 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#box"><code>Box</code></a>
+      <ul>
+        <li><a href="#简介">简介</a></li>
+        <li><a href="#使用场景">使用场景</a></li>
+        <li><a href="#box-内存布局">Box 内存布局</a></li>
+        <li><a href="#boxleak"><code>Box::leak</code></a></li>
+        <li><a href="#box实现"><code>Box</code>实现</a></li>
+        <li><a href="#小结">小结</a></li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing</p>
+<h2 id="box"><code>Box</code></h2>
+<h3 id="简介">简介</h3>
+<p>Rust 中的 <code>Box</code> 是一个智能指针，它提供了一种将值封装在堆上进行内存分配的方法，留在栈上的则是指向堆数据的指针。它的主要优点在于，它可以在编译时自动处理内存管理，避免了手动管理内存分配和释放的麻烦。<code>Box</code> 的工作原理主要分为以下几个方面：</p>
+<ol>
+<li>
+<p><strong>内存分配</strong>：当创建一个 <code>Box</code> 时，它会在堆上分配内存空间，并将值移动到这块内存空间。例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">boxed_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span></code></pre></div><p>这里，<code>boxed_value</code> 是一个指向堆上的 <code>i32</code> 类型的 <code>Box</code>。<code>Box::new</code> 函数会在堆上分配一块足够存储 <code>i32</code> 类型数据的内存，并将值 <code>42</code> 移动到这个内存空间中。</p>
+</li>
+<li>
+<p><strong>所有权和生命周期</strong>：<code>Box</code> 拥有它所封装的值的所有权。当 <code>Box</code> 离开作用域时，Rust 编译器会自动调用 <code>Drop</code> trait 的 <code>drop</code> 方法来释放堆上的内存。这样，我们无需手动管理内存释放，降低了内存泄漏的风险。例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">boxed_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w"> </span><span class="c1">// boxed_value 离开作用域，同时释放堆上的内存
+</span></code></pre></div></li>
+<li>
+<p><strong>解引用</strong>：<code>Box</code> 实现了 <code>Deref</code> trait，这意味着我们可以对 <code>Box</code> 进行解引用操作，以访问其封装的值。例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">boxed_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">boxed_value</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;value: {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">);</span><span class="w">
+</span></code></pre></div><p>这里，<code>*boxed_value</code> 对 <code>boxed_value</code> 进行解引用，提取出封装在 <code>Box</code> 中的值 <code>42</code>。<code>Deref</code> trait 的实现使得我们可以在许多情况下将 <code>Box&lt;T&gt;</code> 作为 <code>&amp;T</code> 类型的引用使用。</p>
+</li>
+</ol>
+<p>总之，Rust 中的 <code>Box</code> 智能指针的核心原理包括在堆上分配内存、自动管理值的所有权和生命周期以及实现解引用操作。这使得我们可以更方便地处理内存分配和管理，从而提高代码的安全性和可维护性。</p>
+<h3 id="使用场景">使用场景</h3>
+<p>由于 <code>Box</code> 是简单的封装，除了将值存储在堆上外，并没有其它性能上的损耗。而性能和功能往往是鱼和熊掌，因此 <code>Box</code> 相比其它智能指针，功能较为单一，可以在以下场景中使用它：</p>
+<ul>
+<li>特意的将数据分配在堆上</li>
+<li>数据较大时，又不想在转移所有权时进行数据拷贝</li>
+<li>类型的大小在编译期无法确定，但是我们又需要固定大小的类型时</li>
+<li>特征对象，用于说明对象实现了一个特征，而不是某个特定的类型</li>
+</ul>
+<p>在Rust中，Box指针是一个智能指针，它在堆上分配内存。使用Box可以让我们管理一些复杂的数据结构和内存布局。以下是一些Box指针的主要用途和用法：</p>
+<p><strong>一、移动大型数据结构到堆上</strong></p>
+<p>当数据结构过大时，将其移动到堆上可以避免栈溢出。例如，创建一个包含大量元素的数组：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">large_array</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">([</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="mi">1_000_000</span><span class="p">]);</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;large_array occupies {} bytes&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span>::<span class="n">mem</span>::<span class="n">size_of_val</span><span class="p">(</span><span class="o">&amp;*</span><span class="n">large_array</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>当栈上数据转移所有权时，实际上是把数据拷贝了一份，最终新旧变量各自拥有不同的数据，因此所有权并未转移。</p>
+<p>而堆上则不然，底层数据并不会被拷贝，转移所有权仅仅是复制一份栈中的指针，再将新的指针赋予新的变量，然后让拥有旧指针的变量失效，最终完成了所有权的转移：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="c1">// 在栈上创建一个长度为1000的数组
+</span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">arr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">;</span><span class="mi">1000</span><span class="p">];</span><span class="w">
+</span><span class="w">    </span><span class="c1">// 将arr所有权转移arr1，由于 `arr` 分配在栈上，因此这里实际上是直接重新深拷贝了一份数据
+</span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">arr1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">arr</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c1">// arr 和 arr1 都拥有各自的栈上数组，因此不会报错
+</span><span class="c1"></span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">arr</span><span class="p">.</span><span class="n">len</span><span class="p">());</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">arr1</span><span class="p">.</span><span class="n">len</span><span class="p">());</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c1">// 在堆上创建一个长度为1000的数组，然后使用一个智能指针指向它
+</span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">arr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">([</span><span class="mi">0</span><span class="p">;</span><span class="mi">1000</span><span class="p">]);</span><span class="w">
+</span><span class="w">    </span><span class="c1">// 将堆上数组的所有权转移给 arr1，由于数据在堆上，因此仅仅拷贝了智能指针的结构体，底层数据并没有被拷贝
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// 所有权顺利转移给 arr1，arr 不再拥有所有权
+</span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">arr1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">arr</span><span class="p">;</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">arr1</span><span class="p">.</span><span class="n">len</span><span class="p">());</span><span class="w">
+</span><span class="w">    </span><span class="c1">// 由于 arr 不再拥有底层数组的所有权，因此下面代码将报错
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// println!(&#34;{:?}&#34;, arr.len());
+</span><span class="c1"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>从以上代码，可以清晰看出大块的数据为何应该放入堆中，此时 <code>Box</code> 就成为了我们最好的帮手。</p>
+<p><strong>二、递归数据结构</strong></p>
+<p>Rust 需要在编译时知道类型占用多少空间，如果一种类型在编译时无法知道具体的大小，那么被称为动态大小类型 DST。</p>
+<p>其中一种无法在编译时知道大小的类型是<strong>递归类型</strong>：在类型定义中又使用到了自身，或者说该类型的值的一部分可以是相同类型的其它值，这种值的嵌套理论上可以无限进行下去，所以 Rust 不知道递归类型需要多少空间：</p>
+<p><code>Box</code>允许我们创建递归数据结构，如链表和树。例如，创建一个简单的单向链表：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">enum</span> <span class="nc">List</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">Cons</span><span class="p">(</span><span class="kt">i32</span><span class="p">,</span><span class="w"> </span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&gt;</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="n">Nil</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">List</span>::<span class="p">{</span><span class="n">Cons</span><span class="p">,</span><span class="w"> </span><span class="n">Nil</span><span class="p">};</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">Cons</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">Cons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">Nil</span><span class="p">))))));</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p><strong>三、动态大小类型（DST）</strong></p>
+<p>当我们需要在运行时确定数据大小时，可以使用Box。例如，创建一个动态大小的字符串切片：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">s</span>: <span class="nb">Box</span><span class="o">&lt;</span><span class="n">dyn</span><span class="w"> </span><span class="n">std</span>::<span class="n">fmt</span>::<span class="n">Display</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="s">&#34;Hello, world!&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p><strong>四、实现多态</strong></p>
+<p>通过Box，我们可以实现多态，使用Trait对象表示不同类型的共享行为。例如，创建一个处理绘图对象的函数：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">trait</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">area</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Circle</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">radius</span>: <span class="kt">f64</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Square</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">side</span>: <span class="kt">f64</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Circle</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">area</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">std</span>::<span class="kt">f64</span>::<span class="n">consts</span>::<span class="n">PI</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">radius</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Square</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">area</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">side</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">side</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">print_area</span><span class="p">(</span><span class="n">shape</span>: <span class="nb">Box</span><span class="o">&lt;</span><span class="n">dyn</span><span class="w"> </span><span class="n">Shape</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Area of the shape is {:.2}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">shape</span><span class="p">.</span><span class="n">area</span><span class="p">());</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">circle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Circle</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">radius</span>: <span class="mf">5.0</span><span class="w"> </span><span class="p">};</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">square</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Square</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">side</span>: <span class="mf">4.0</span><span class="w"> </span><span class="p">};</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="n">print_area</span><span class="p">(</span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">circle</span><span class="p">));</span><span class="w">
+</span><span class="w">    </span><span class="n">print_area</span><span class="p">(</span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">square</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个例子中，我们实现了一个处理不同类型形状的<code>print_area</code>函数。<code>Box&lt;dyn Shape&gt;</code>可以接受任何实现了<code>Shape</code> trait的类型。</p>
+<p>总之，Box指针在Rust中有很多用途，它可以帮助我们处理复杂的数据结构、内存分配和多态。</p>
+<h3 id="box-内存布局">Box 内存布局</h3>
+<p>先来看看 <code>Vec&lt;i32&gt;</code> 的内存布局：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="p">(</span><span class="n">stack</span><span class="p">)</span><span class="w">    </span><span class="p">(</span><span class="n">heap</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="err">┌──────┐</span><span class="w">   </span><span class="err">┌───┐</span><span class="w">
+</span><span class="w"></span><span class="err">│</span><span class="w"> </span><span class="n">vec1</span><span class="w"> </span><span class="err">│──→│</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w"></span><span class="err">└──────┘</span><span class="w">   </span><span class="err">├───┤</span><span class="w">
+</span><span class="w">           </span><span class="err">│</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w">           </span><span class="err">├───┤</span><span class="w">
+</span><span class="w">           </span><span class="err">│</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w">           </span><span class="err">├───┤</span><span class="w">
+</span><span class="w">           </span><span class="err">│</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w">           </span><span class="err">└───┘</span><span class="w">
+</span></code></pre></div><p>之前提到过 <code>Vec</code> 和 <code>String</code> 都是智能指针，从上图可以看出，该智能指针存储在栈中，然后指向堆上的数组数据。那如果数组中每个元素都是一个 <code>Box</code> 对象呢？来看看 <code>Vec&lt;Box&lt;i32&gt;&gt;</code> 的内存布局：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">
+</span><span class="w">                    </span><span class="p">(</span><span class="n">heap</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">stack</span><span class="p">)</span><span class="w">    </span><span class="p">(</span><span class="n">heap</span><span class="p">)</span><span class="w">   </span><span class="err">┌───┐</span><span class="w">
+</span><span class="w"></span><span class="err">┌──────┐</span><span class="w">   </span><span class="err">┌───┐</span><span class="w"> </span><span class="err">┌─→│</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w"></span><span class="err">│</span><span class="w"> </span><span class="n">vec2</span><span class="w"> </span><span class="err">│──→│</span><span class="n">B1</span><span class="w"> </span><span class="err">│─┘</span><span class="w">  </span><span class="err">└───┘</span><span class="w">
+</span><span class="w"></span><span class="err">└──────┘</span><span class="w">   </span><span class="err">├───┤</span><span class="w">    </span><span class="err">┌───┐</span><span class="w">
+</span><span class="w">           </span><span class="err">│</span><span class="n">B2</span><span class="w"> </span><span class="err">│───→│</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w">           </span><span class="err">├───┤</span><span class="w">    </span><span class="err">└───┘</span><span class="w">
+</span><span class="w">           </span><span class="err">│</span><span class="n">B3</span><span class="w"> </span><span class="err">│─┐</span><span class="w">  </span><span class="err">┌───┐</span><span class="w">
+</span><span class="w">           </span><span class="err">├───┤</span><span class="w"> </span><span class="err">└─→│</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w">           </span><span class="err">│</span><span class="n">B4</span><span class="w"> </span><span class="err">│─┐</span><span class="w">  </span><span class="err">└───┘</span><span class="w">
+</span><span class="w">           </span><span class="err">└───┘</span><span class="w"> </span><span class="err">│</span><span class="w">  </span><span class="err">┌───┐</span><span class="w">
+</span><span class="w">                 </span><span class="err">└─→│</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">│</span><span class="w">
+</span><span class="w">                    </span><span class="err">└───┘</span><span class="w">
+</span></code></pre></div><p>上面的 <code>B1</code> 代表被 <code>Box</code> 分配到堆上的值 <code>1</code>。</p>
+<p>可以看出智能指针 <code>vec2</code> 依然是存储在栈上，然后指针指向一个堆上的数组，该数组中每个元素都是一个 <code>Box</code> 智能指针，最终 <code>Box</code> 智能指针又指向了存储在堆上的实际值。</p>
+<p>因此当我们从数组中取出某个元素时，取到的是对应的智能指针 <code>Box</code>，需要对该智能指针进行解引用，才能取出最终的值：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">arr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vec</span><span class="o">!</span><span class="p">[</span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">2</span><span class="p">)];</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">second</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">**</span><span class="n">first</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="o">**</span><span class="n">second</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>以上代码有几个值得注意的点：</p>
+<ul>
+<li>使用 <code>&amp;</code> 借用数组中的元素，否则会报所有权错误</li>
+<li>表达式不能隐式的解引用，因此必须使用 <code>**</code> 做两次解引用，第一次将 <code>&amp;Box&lt;i32&gt;</code> 类型转成 <code>Box&lt;i32&gt;</code>，第二次将 <code>Box&lt;i32&gt;</code> 转成 <code>i32</code></li>
+</ul>
+<h3 id="boxleak"><code>Box::leak</code></h3>
+<p><code>Box</code> 中还提供了一个非常有用的关联函数：<code>Box::leak</code>，它可以消费掉 <code>Box</code> 并且强制目标值从内存中泄漏，Rust Std 的介绍如下：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">leak</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">(</span><span class="n">b</span>: <span class="nb">Box</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kp">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">T</span><span class="w">
+</span><span class="w"></span><span class="k">where</span><span class="w">
+</span><span class="w">    </span><span class="n">A</span>: <span class="na">&#39;a</span><span class="p">,</span><span class="w"> 
+</span></code></pre></div><p>消耗并泄漏 <code>Box</code>，返回一个可变引用，<code>&amp;'a mut T</code>。 请注意，类型 <code>T</code> 必须超过所选的生命周期 <code>'a</code>。 如果类型仅具有静态引用，或者根本没有静态引用，则可以将其选择为 <code>'static</code>。</p>
+<p>该函数主要用于在程序的剩余生命期内保留的数据。 丢弃返回的引用将导致内存泄漏。 如果这是不可接受的，则应首先将引用与 <a href="https://rustwiki.org/zh-CN/std/boxed/struct.Box.html#method.from_raw" target="_blank" rel="noopener noreffer "><code>Box::from_raw</code></a> 函数包装在一起，生成 <code>Box</code>。</p>
+<p>这个 <code>Box</code> 可以被丢弃，这将正确销毁 <code>T</code> 并释放分配的内存。</p>
+<blockquote>
+<p>Note: 这是一个关联函数，这意味着您必须将其称为 <code>Box::leak(b)</code> 而不是 <code>b.leak()</code>。 这样就不会与内部类型的方法发生冲突。</p>
+</blockquote>
+<p>简单用法：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">41</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">static_ref</span>: <span class="kp">&amp;</span><span class="nb">&#39;static</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="kt">usize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">leak</span><span class="p">(</span><span class="n">x</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="o">*</span><span class="n">static_ref</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="n">assert_eq</span><span class="o">!</span><span class="p">(</span><span class="o">*</span><span class="n">static_ref</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span></code></pre></div><p>未定义大小的数据：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vec</span><span class="o">!</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">].</span><span class="n">into_boxed_slice</span><span class="p">();</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">static_ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">leak</span><span class="p">(</span><span class="n">x</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="n">static_ref</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="n">assert_eq</span><span class="o">!</span><span class="p">(</span><span class="o">*</span><span class="n">static_ref</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">]);</span><span class="w">
+</span></code></pre></div><blockquote>
+<p>解读一下这个例子：使用 <code>Box::leak</code> 函数将 <code>x</code> 转换为一个静态生命周期的引用。<code>Box::leak</code> 函数泄漏了 <code>x</code>（使其无法在程序运行期间被回收），并返回一个指向数据的静态引用。<code>static_ref</code> 变量现在是一个指向堆上分配的切片 <code>[1, 2, 3]</code> 的静态引用。这段代码展示了如何将一个向量转换为一个 boxed slice，使用 <code>Box::leak</code> 函数使其具有静态生命周期，然后修改切片内容并检查其值。</p>
+</blockquote>
+<p>那“强制内存泄漏”在具体实践中有什么用呢？其实还真有点用，例如，你可以把一个 <code>String</code> 类型，变成一个 <code>'static</code> 生命周期的 <code>&amp;str</code> 类型：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">   </span><span class="kd">let</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gen_static_str</span><span class="p">();</span><span class="w">
+</span><span class="w">   </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">gen_static_str</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="kp">&amp;</span><span class="nb">&#39;static</span><span class="w"> </span><span class="kt">str</span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="n">s</span><span class="p">.</span><span class="n">push_str</span><span class="p">(</span><span class="s">&#34;hello, world&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="nb">Box</span>::<span class="n">leak</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">into_boxed_str</span><span class="p">())</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>“在之前的代码中，如果 <code>String</code> 创建于函数中，那么返回它的唯一方法就是转移所有权给调用者 <code>fn move_str() -&gt; String</code>，而通过 <code>Box::leak</code> 我们不仅返回了一个 <code>&amp;str</code> 字符串切片，它还是 <code>'static</code> 生命周期的！</p>
+<p>要知道真正具有 <code>'static</code> 生命周期的往往都是编译期就创建的值，例如 <code>let v = &quot;hello, world&quot;</code>，这里 <code>v</code> 是直接打包到二进制可执行文件中的，因此该字符串具有 <code>'static</code> 生命周期，再比如 <code>const</code> 常量。</p>
+<p>又有读者要问了，我还可以手动为变量标注 <code>'static</code> 啊。其实你标注的 <code>'static</code> 只是用来忽悠编译器的，但是超出作用域，一样被释放回收。而使用 <code>Box::leak</code> 就可以将一个运行期的值转为 <code>'static</code>。</p>
+<p>光看上面的描述，大家可能还是云里雾里、一头雾水。</p>
+<p>那么我说一个简单的场景，<strong>你需要一个在运行期初始化的值，但是可以全局有效，也就是和整个程序活得一样久</strong>，那么就可以使用 <code>Box::leak</code>，例如有一个存储配置的结构体实例，它是在运行期动态插入内容，那么就可以将其转为全局有效，虽然 <code>Rc/Arc</code> 也可以实现此功能，但是 <code>Box::leak</code> 是性能最高的。”</p>
+<p>举例如下：</p>
+<p>首先，我们定义一个存储配置的结构体：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">struct</span> <span class="nc">Configuration</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">setting1</span>: <span class="nb">String</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">setting2</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>然后，让我们动态地创建一个 <code>Configuration</code> 实例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">create_configuration</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">Configuration</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">Configuration</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">setting1</span>: <span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;Example setting&#34;</span><span class="p">),</span><span class="w">
+</span><span class="w">        </span><span class="n">setting2</span>: <span class="mi">42</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>接下来，我们使用 <code>Box::leak</code> 函数将 <code>Configuration</code> 实例转换为一个全局有效的引用。为此，我们需要将实例分配在堆上（使用 <code>Box</code>），然后使用 <code>Box::leak</code> 函数将 <code>Box</code> 泄漏（将其转换为一个静态引用），使其生命周期与整个程序相同：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">create_configuration</span><span class="p">());</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">leaked_config</span>: <span class="kp">&amp;</span><span class="nb">&#39;static</span><span class="w"> </span><span class="n">Configuration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">leak</span><span class="p">(</span><span class="n">config</span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c1">// 使用 `leaked_config` 的内容...
+</span><span class="c1"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个例子中，虽然我们可以使用 <code>Rc</code> 或 <code>Arc</code> 来实现类似的功能，但 <code>Box::leak</code> 提供了更高的性能。这是因为 <code>Box::leak</code> 不涉及引用计数和线程同步（<code>Rc</code> 和 <code>Arc</code> 需要这些功能），所以使用 <code>Box::leak</code> 的开销更小。</p>
+<p>需要注意的是，使用 <code>Box::leak</code> 会导致内存泄漏，因为泄漏的对象在程序运行期间无法回收。然而，在这种情况下，我们希望这个值在整个程序运行期间保持有效，所以这个内存泄漏在这个特定场景下是可以接受的。</p>
+<h3 id="box实现"><code>Box</code>实现</h3>
+<p>Rust 的 <code>Box</code> 智能指针是通过一些核心特性和内存管理技术实现的。以下是关于其实现的详细说明：</p>
+<ol>
+<li>
+<p><strong>包装原始指针</strong>：<code>Box</code> 是一个包装了原始指针的结构体，它封装了一个指向堆内存的原始指针。当创建一个 <code>Box</code> 时，它会将原始指针包装在一个安全的类型中。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="c1">// `Box` 的定义来自于 Rust 标准库
+</span><span class="c1"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="n">T</span>: <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Unique</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">);</span><span class="w">
+</span></code></pre></div><p>这里，<code>Unique&lt;T&gt;</code> 是一个包装了原始指针的内部类型。它保证了指针的唯一性，即同一时刻没有其他智能指针指向相同的堆内存。</p>
+</li>
+<li>
+<p><strong>内存分配</strong>：<code>Box</code> 的内存分配通过 <code>Box::new</code> 函数实现。该函数会在堆上为给定值分配内存，并将值移动到堆上。例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">boxed_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span></code></pre></div><p>在这个例子中，<code>Box::new</code> 函数会在堆上分配内存空间，并将值 <code>42</code> 移动到该内存空间中。</p>
+</li>
+<li>
+<p><strong>实现 Deref 和 DerefMut traits</strong>：为了让 <code>Box</code> 能够访问和修改其封装的值，它实现了 <code>Deref</code> 和 <code>DerefMut</code> traits。这允许我们使用解引用操作符（<code>*</code>）来访问和修改封装的值。</p>
+<p>例如，访问 <code>Box</code> 中的值：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">boxed_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">boxed_value</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;value: {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">);</span><span class="w">
+</span></code></pre></div><p>修改 <code>Box</code> 中的值：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">boxed_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="o">*</span><span class="n">boxed_value</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;value: {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">boxed_value</span><span class="p">);</span><span class="w">
+</span></code></pre></div></li>
+<li>
+<p><strong>实现 Drop trait</strong>：为了在不需要时自动释放 <code>Box</code> 分配的堆内存，<code>Box</code> 实现了 <code>Drop</code> trait。当 <code>Box</code> 离开作用域时，Rust 编译器会自动调用 <code>Drop</code> trait 的 <code>drop</code> 方法，从而释放堆内存。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span>: <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span><span class="w"> </span><span class="nb">Drop</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">drop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="c1">// 实现内存的释放
+</span><span class="c1"></span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div></li>
+</ol>
+<p>此外，<code>Box</code> 可以处理不定大小类型（DST，Dynamically Sized Types）和强制将数据存储在堆上的场景。这使得 <code>Box</code> 成为一种灵活、安全且高效的内存管理工具。</p>
+<h3 id="小结">小结</h3>
+<p>综上所述，Rust 的 <code>Box</code> 智能指针是通过包装原始指针、实现内存分配和释放以及实现 <code>Deref</code> 和 <code>DerefMut</code> traits 来实现的。这些特性使得 <code>Box</code> 成为一种安全、高效且易于使用的内存管理工具。Box指针在Rust 中有很多用途，它可以帮助我们处理复杂的数据结构、内存分配和多态。</p>
+<p><code>Box</code> 背后是调用 <code>jemalloc</code> 来做内存管理，所以堆上的空间无需我们的手动管理。与此类似，带 GC 的语言中的对象也是借助于 <code>Box</code> 概念来实现的，<strong>一切皆对象 = 一切皆 Box</strong>， 只不过我们无需自己去 <code>Box</code> 罢了。</p>
+<p>最后再补充一下<code>jemallac</code>的一些简单知识：</p>
+<blockquote>
+<p>“jemalloc is a general purpose malloc(3) implementation that emphasizes fragmentation avoidance and scalable concurrency support. jemalloc first came into use as the FreeBSD libc allocator in 2005, and since then it has found its way into numerous applications that rely on its predictable behavior. In 2010 jemalloc development efforts broadened to include developer support features such as heap profiling and extensive monitoring/tuning hooks. Modern jemalloc releases continue to be integrated back into FreeBSD, and therefore versatility remains critical. Ongoing development efforts trend toward making jemalloc among the best allocators for a broad range of demanding applications, and eliminating/mitigating weaknesses that have practical repercussions for real world applications.”</p>
+<p>jemalloc 是一种通用的 malloc(3) 实现，强调避免碎片化和可扩展的并发支持。jemalloc 最早于 2005 年作为 FreeBSD libc 分配器开始使用，此后它已经被许多依赖其可预测行为的应用程序所采用。2010 年，jemalloc 的开发工作扩展到了包括堆分析和广泛的监控/调优挂钩等开发者支持功能。现代的 jemalloc 版本继续被整合回 FreeBSD，因此多功能性仍然至关重要。持续的开发努力趋向于使 jemalloc 成为广泛的苛刻应用程序中最佳分配器之一，并消除/缓解对实际应用程序产生实际影响的弱点。</p>
+</blockquote>
+<p><code>jemalloc</code> 指的是一种高性能、多平台的内存分配器，它提供了一种替代 C 语言标准库中的默认内存分配器（例如 <code>malloc</code>、<code>calloc</code>、<code>realloc</code> 和 <code>free</code> 等函数）的方法。<code>jemalloc</code> 被设计用于在多线程环境下提高内存分配性能，减小内存碎片，并提供可扩展性。它广泛应用于许多知名项目中，例如 Firefox、Rust 编程语言和 Redis。</p>
+<p><code>jemalloc</code> 的主要优势包括：</p>
+<ol>
+<li><strong>多线程支持</strong>：<code>jemalloc</code> 能够在多线程环境下有效地处理内存分配和释放，以减少锁争用和提高性能。</li>
+<li><strong>内存碎片减少</strong>：<code>jemalloc</code> 使用不同大小的内存块来分配内存，这有助于减少内存碎片，从而提高内存利用率。</li>
+<li><strong>可扩展性</strong>：<code>jemalloc</code> 设计用于在多处理器系统上扩展，以支持大量并发内存分配操作。</li>
+</ol>
+<p>接下来通过一个简单的 C 语言示例展示如何使用 <code>jemalloc</code>。首先，确保你已经安装了 <code>jemalloc</code> 库。接着，创建一个名为 <code>main.c</code> 的文件，并输入以下内容：</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;jemalloc/jemalloc.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// 使用 je_malloc 分配内存
+</span><span class="c1"></span>    <span class="kt">int</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="p">)</span><span class="n">je_malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">array</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Memory allocation failed.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 向分配的内存写入数据
+</span><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 读取分配的内存中的数据
+</span><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%d &#34;</span><span class="p">,</span> <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+
+    <span class="c1">// 使用 je_free 释放内存
+</span><span class="c1"></span>    <span class="n">je_free</span><span class="p">(</span><span class="n">array</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>在这个示例中，我们首先包含 <code>jemalloc/jemalloc.h</code> 头文件，以便使用 <code>jemalloc</code> 提供的内存分配函数。我们使用 <code>je_malloc</code> 函数分配内存，然后像往常一样使用分配的内存。最后，我们使用 <code>je_free</code> 函数释放内存。</p>
+<p>要编译这个示例程序，请使用以下命令：</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">gcc main.c -o main -ljemalloc
+</code></pre></div><p>这将生成一个名为 <code>main</code> 的可执行文件。运行此文件，你将看到如下输出：</p>
+<pre><code>0 1 2 3 4 5 6 7 8 9
+</code></pre><p>总之，<code>jemalloc</code> 是一种高性能的内存分配器，它在多线程环境下提供了优良的性能、减少内存碎片和良好的可扩展性。</p>
+<p><strong>// 等待更新其他智能指针&hellip;</strong></p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li>GPT - 4</li>
+<li><a href="https://course.rs/advance/smart-pointer/intro.html">https://course.rs/advance/smart-pointer/intro.html</a></li>
+<li><a href="https://kaisery.github.io/trpl-zh-cn/ch15-01-box.html">https://kaisery.github.io/trpl-zh-cn/ch15-01-box.html</a></li>
+<li><a href="https://rustwiki.org/zh-CN/std/boxed/struct.Box.html#method.leak">https://rustwiki.org/zh-CN/std/boxed/struct.Box.html#method.leak</a></li>
+<li><a href="https://jemalloc.net/">https://jemalloc.net/</a></li>
+</ol></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-04-04</span>
+            </div><div class="post-info-license">
+                <span>[CC 4.0 BY-SA](https://creativecommons.org/licenses/by-nc/4.0/)</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/smart_points_in_rust/" data-title="Rust 中的智能指针" data-via="@solaris_linus" data-hashtags="Rust"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/smart_points_in_rust/" data-title="Rust 中的智能指针"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/smart_points_in_rust/" data-title="Rust 中的智能指针"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/smart_points_in_rust/" data-title="Rust 中的智能指针"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/rust/">Rust</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/prompt_learning_note/" class="prev" rel="prev" title="Prompt 工程学习记录"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Prompt 工程学习记录</a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.68.3">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.11"><i class="far fa-kiss-wink-heart fa-fw" aria-hidden="true"></i> LoveIt</a>
+                </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Solar1s</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/css/lightgallery-bundle.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/lightgallery.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/thumbnail/lg-thumbnail.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/zoom/lg-zoom.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{},"lightgallery":true};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
