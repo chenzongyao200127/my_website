@@ -2,13 +2,18 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>http://example.org/categories/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/posts/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/categories/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/machine-learning/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/message-clustering/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/posts/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/protocol-reverse-engineering/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/categories/security/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/</loc><lastmod>2023-04-06T19:35:34&#43;08:00</lastmod></url><url>
             <loc>http://example.org/categories/programming-languages/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/rust/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
             <loc>http://example.org/posts/smart_points_in_rust/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/tags/</loc><lastmod>2023-04-04T10:15:03&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/artificial-general-intelligence/</loc><lastmod>2023-04-03T20:52:56&#43;08:00</lastmod></url><url>
             <loc>http://example.org/categories/artificial-intelligence/</loc><lastmod>2023-04-03T20:52:56&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/prompt-engineering/</loc><lastmod>2023-04-03T20:52:56&#43;08:00</lastmod></url><url>
@@ -16,6 +21,5 @@
             <loc>http://example.org/tags/java-web/</loc><lastmod>2023-04-03T17:03:10&#43;08:00</lastmod></url><url>
             <loc>http://example.org/posts/a_first_look_at_java_web_security_research/</loc><lastmod>2023-04-03T17:03:10&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/security/</loc><lastmod>2023-04-03T17:03:10&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/categories/security/</loc><lastmod>2023-04-03T17:03:10&#43;08:00</lastmod></url><url>
             <loc>http://example.org/posts/ai_&#43;_productivity_tool_collections/</loc><lastmod>2023-03-23T15:23:18&#43;08:00</lastmod></url><url>
             <loc>http://example.org/about/</loc><priority>0</priority></url></urlset>

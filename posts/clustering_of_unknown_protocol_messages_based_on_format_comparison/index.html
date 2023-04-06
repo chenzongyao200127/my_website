@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>基于格式比较的未知协议消息聚类 - Solar1s&#39; Blog</title><meta name="Description" content="论文链接：https://doi.org/10.1016/j.comnet.2020.107296"><meta property="og:title" content="基于格式比较的未知协议消息聚类" />
+<meta property="og:description" content="论文链接：https://doi.org/10.1016/j.comnet.2020.107296" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" />
+<meta property="og:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+<meta property="article:published_time" content="2023-04-06T19:35:34+08:00" />
+<meta property="article:modified_time" content="2023-04-06T19:35:34+08:00" /><meta property="og:site_name" content="Solar1s&#39; Personal Blog" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+
+<meta name="twitter:title" content="基于格式比较的未知协议消息聚类"/>
+<meta name="twitter:description" content="论文链接：https://doi.org/10.1016/j.comnet.2020.107296"/>
+<meta name="application-name" content="Solar1s&#39; Personal Blog">
+<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" /><link rel="prev" href="http://example.org/posts/smart_points_in_rust/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "基于格式比较的未知协议消息聚类",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/posts\/clustering_of_unknown_protocol_messages_based_on_format_comparison\/"
+        },"genre": "posts","keywords": "Protocol Reverse Engineering, Message Clustering, Machine Learning","wordcount":  26492 ,
+        "url": "http:\/\/example.org\/posts\/clustering_of_unknown_protocol_messages_based_on_format_comparison\/","datePublished": "2023-04-06T19:35:34+08:00","dateModified": "2023-04-06T19:35:34+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Solar1s"
+            },"description": "论文链接：https://doi.org/10.1016/j.comnet.2020.107296"
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><a class="menu-item" href="/about/"> 关于 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a class="menu-item" href="/about/" title="">关于</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于格式比较的未知协议消息聚类</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-06">2023-04-06</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;26492 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;53 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#1-introduction">1. Introduction</a></li>
+    <li><a href="#2-related-work">2. Related work</a></li>
+    <li><a href="#3-unsupervised-clustering-based-on-format-similarity">3. Unsupervised clustering based on format similarity</a>
+      <ul>
+        <li><a href="#31-token-format-distance-measurement">3.1. Token format distance measurement</a></li>
+        <li><a href="#32-message-format-distance-measurement">3.2. Message format distance measurement</a></li>
+        <li><a href="#33-unsupervised-clustering-strategy">3.3. Unsupervised clustering strategy</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-experiment-and-analysis">4. Experiment and analysis</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>原文链接：https://doi.org/10.1016/j.comnet.2020.107296</p>
+<p>阅读目的：精读这篇论文，协助师兄复现论文的算法</p>
+<h2 id="abstract">Abstract</h2>
+<p>As a solution to detect and analyse unknown or proprietary protocols, Protocol Reverse Engineering(PRE) has been developed swiftly in recent years. In this field, message clustering aimed at protocol format serves as a fundamental solution for differentiating of unknown protocol messages. This paper works on the problem of format-oriented message clustering of unknown protocols, including messages from proprietary or non-cooperative network environments with their specifications unknown. By introducing basic rules of <a href="https://www.sciencedirect.com/topics/computer-science/backus-naur-form" target="_blank" rel="noopener noreffer ">ABNF</a>, we define <em>Token Format Distance (TFD)</em> and <em>Message Format Distance (MFD)</em> to represent format similarity of tokens and messages, and introduce Jaccard Distance and an optimized <a href="https://www.sciencedirect.com/topics/computer-science/sequence-alignment" target="_blank" rel="noopener noreffer ">sequence alignment</a> algorithm (MFD measurement) to compute them. Then, a <a href="https://www.sciencedirect.com/topics/computer-science/distance-matrix" target="_blank" rel="noopener noreffer ">distance matrix</a> is built by MFD and we feed it to DBSCAN algorithm to cluster unknown protocol messages into classes with different formats. In this process, we design an <em>unsupervised clustering strategy</em> with <a href="https://www.sciencedirect.com/topics/computer-science/silhouette-coefficient" target="_blank" rel="noopener noreffer ">Silhouette Coefficient</a> and Dunn Index applied to parameter selecting of DBSCAN. In experiment on two datasets, the harmonic average <em>v-measures</em> of <em>homogeneity</em> and <em>completeness</em> on result clusters are both above 0.91, with <em>fmi</em>s and <em>coverage</em>s no less than 0.97. Together with <em>iqr</em> of <em>v-measure</em> and <em>fmi</em> bellow 0.1 and 0.03 separately in boxplot analyses, this method is proved to have remarkable validity and stability. Comprehensive analyses and comparisons on these indexes also show considerable advantages of our method over previous work.</p>
+<blockquote>
+<p>翻译：</p>
+<p>作为一种检测和分析未知或专有协议的解决方案，协议逆向工程（PRE）近年来得到了迅速发展。在这个领域，针对协议格式的消息聚类是区分未知协议消息的基本解决方案。</p>
+<p>本文研究未知协议的面向格式的消息聚类问题，包括来自专有或非合作网络环境的未知规范的消息。通过引入<a href="https://www.sciencedirect.com/topics/computer-science/backus-naur-form" target="_blank" rel="noopener noreffer ">ABNF</a>的基本规则，我们定义了<em>Token Format Distance (TFD)</em> 和 <em>Message Format Distance (MFD)</em> 以表示token和消息的格式相似性，并引入Jaccard Distance和优化的<a href="https://www.sciencedirect.com/topics/computer-science/sequence-alignment" target="_blank" rel="noopener noreffer ">序列对齐</a>算法（MFD度量）来计算它们。然后，我们使用MFD构建一个<a href="https://www.sciencedirect.com/topics/computer-science/distance-matrix" target="_blank" rel="noopener noreffer ">距离矩阵</a>，并将其输入DBSCAN算法，将未知协议消息聚类为具有不同格式的类。在这个过程中，我们设计了一个<em>无监督聚类策略</em>，将<a href="https://www.sciencedirect.com/topics/computer-science/silhouette-coefficient" target="_blank" rel="noopener noreffer ">轮廓系数</a>和Dunn指数应用于DBSCAN的参数选择。</p>
+<p>在对两个数据集的实验中，结果聚类的<em>同质性</em>和<em>完整性</em>的调和平均<em>v-measures</em>均在0.91以上，<em>fmi</em>s和<em>覆盖率</em>s均不低于0.97。同时，通过箱线图分析，<em>v-measure</em>和<em>fmi</em>的<em>iqr</em>分别低于0.1和0.03，证明了该方法具有显著的有效性和稳定性。对这些指标的综合分析和比较还表明，我们的方法比以前的工作具有相当的优势。</p>
+</blockquote>
+<p><strong>Backus-Naur Form (ABNF) 规则是什么？</strong></p>
+<p>Backus-Naur Form（BNF）是一种用于描述上下文无关文法的表示法，广泛用于描述编程语言、数据格式和通信协议的语法。ABNF（扩展的巴科斯-诺尔范式，Augmented Backus-Naur Form）是BNF的一种扩展，它支持更多的表示方式和更严格的语法规则。ABNF最初在RFC 2234中定义，后来在RFC 5234和RFC 7405中得到更新和扩展。</p>
+<p>ABNF由一系列生产式（production）组成，每个生产式定义了一个非终结符（non-terminal）和它可以扩展为的符号序列。每个生产式包含一个左侧的非终结符，一个分隔符（::=），以及一个右侧的符号序列。符号序列可以包含终结符（例如字符或数字字面量）、非终结符（在其他生产式中定义）以及组合符号（例如选择、重复和分组）。</p>
+<p>以下是一个简单的ABNF示例，描述了一个由字母和数字组成的标识符：</p>
+<pre><code>identifier = letter *(letter / digit)
+letter     = %x41-5A / %x61-7A ; A-Z / a-z
+digit      = %x30-39 ; 0-9
+</code></pre><p>在这个例子中，我们有三个生产式：</p>
+<ol>
+<li><code>identifier</code> 是主要的非终结符，定义了一个标识符。它以一个 <code>letter</code> 开始，后面可以跟任意数量的 <code>letter</code> 或 <code>digit</code>。</li>
+<li><code>letter</code> 是一个非终结符，表示一个字母。它可以是大写字母（A-Z，表示为 <code>%x41-5A</code>）或小写字母（a-z，表示为 <code>%x61-7A</code>）。</li>
+<li><code>digit</code> 是一个非终结符，表示一个数字。它可以是0-9之间的任意数字（表示为 <code>%x30-39</code>）。</li>
+</ol>
+<p>其中，<code>%x</code> 表示十六进制数值，<code>-</code> 表示一个范围，<code>/</code> 表示选择（或），<code>*</code> 表示重复（跟在括号后面表示重复括号内的元素）。</p>
+<p>ABNF广泛用于定义各种标准，例如互联网工程任务组（IETF）的许多RFC文档。</p>
+<p>Backus-Naur Form（BNF）及其扩展Augmented Backus-Naur Form（ABNF）是用于表示形式化语法的元语言。形式化语法定义了一种形式语言的结构和规则。BNF和ABNF广泛用于描述编程语言、数据格式和通信协议的语法。它们能够清晰、简洁地表示语法规则，使得人们可以准确理解和实现这些规则。</p>
+<p>BNF的创建背景：BNF的历史可以追溯到20世纪50年代，当时计算机科学家John Backus为了描述IBM 704汇编程序的语法而发明了这种表示法。后来，他的同事Peter Naur将这种表示法应用到ALGOL 60编程语言的定义中，并对其进行了改进。因此，这种表示法以这两位科学家的名字命名为Backus-Naur Form。</p>
+<p>ABNF的创建背景：虽然BNF非常有用，但它的表示能力有限，对于某些复杂的语法规则可能不够方便和清晰。因此，扩展的巴科斯-诺尔范式（ABNF）应运而生。ABNF在BNF的基础上引入了更丰富的表示手段和更严格的语法规则，使得描述语法更加灵活和精确。ABNF最初在RFC 2234中定义，后来在RFC 5234和RFC 7405中得到更新和扩展。</p>
+<p>ABNF的主要用途：</p>
+<ol>
+<li><strong>编程语言的定义</strong>：ABNF可以用来描述编程语言的语法结构，帮助编译器和解释器开发者理解和实现语言规则。</li>
+<li><strong>数据格式的定义</strong>：ABNF可以用来描述各种数据格式（如JSON、XML等）的语法规则，方便开发者编写解析器和生成器。</li>
+<li><strong>通信协议的定义</strong>：ABNF可以用来描述通信协议（如HTTP、SMTP等）的消息格式和语法规则，帮助开发者实现协议的解析和构建。</li>
+<li><strong>文档和标准规范</strong>：许多技术标准和规范（如IETF的RFC文档）使用ABNF来描述相关技术的语法和格式，确保实现的一致性和互操作性。</li>
+</ol>
+<p>总之，BNF和ABNF是描述形式语言语法的强大工具，它们在计算机科学和软件工程领域具有广泛的应用。通过使用这些表示法，开发者可以更轻松地理解、实现和传播复杂的技术规则。</p>
+<p><strong>具体的例子</strong></p>
+<p>以下是一个使用ABNF规则表示简化版的HTTP/1.1请求消息的例子。这个例子仅包含了基本的组成部分，实际的HTTP/1.1规范要复杂得多。我们将关注请求行（request line）、头部字段（header fields）和CRLF（回车换行）。</p>
+<div class="highlight"><pre class="chroma"><code class="language-abnf" data-lang="abnf"><span class="c1">; 一个简化版的HTTP/1.1请求消息</span>
+<span class="nc">http-message</span> <span class="o">=</span> <span class="nc">request-line</span> <span class="k">CRLF</span> <span class="nc">header-field</span> <span class="o">*</span><span class="k">CRLF</span> <span class="k">CRLF</span>
+
+<span class="c1">; 请求行包括请求方法、请求URI和HTTP版本</span>
+<span class="nc">request-line</span> <span class="o">=</span> <span class="nc">method</span> <span class="k">SP</span> <span class="nc">request-uri</span> <span class="k">SP</span> <span class="nc">http-version</span> <span class="k">CRLF</span>
+
+<span class="c1">; 请求方法</span>
+<span class="nc">method</span> <span class="o">=</span> <span class="l">&#34;GET&#34;</span> <span class="o">/</span> <span class="l">&#34;POST&#34;</span> <span class="o">/</span> <span class="l">&#34;PUT&#34;</span> <span class="o">/</span> <span class="l">&#34;DELETE&#34;</span> <span class="o">/</span> <span class="l">&#34;HEAD&#34;</span>
+
+<span class="c1">; 请求的统一资源标识符（URI）</span>
+<span class="nc">request-uri</span> <span class="o">=</span> &lt;一个符合URI规范的字符串，例如<span class="l">&#34;/index.html&#34;</span>或<span class="l">&#34;https://example.com/index.html&#34;</span>，此处未进一步定义&gt;
+
+<span class="c1">; HTTP版本</span>
+<span class="nc">http-version</span> <span class="o">=</span> <span class="l">&#34;HTTP/&#34;</span> <span class="o">1*</span><span class="k">DIGIT</span> <span class="l">&#34;.&#34;</span> <span class="o">1*</span><span class="k">DIGIT</span>
+
+<span class="c1">; 头部字段包括字段名和字段值</span>
+<span class="nc">header-field</span> <span class="o">=</span> <span class="nc">field-name</span> <span class="l">&#34;:&#34;</span> <span class="nc">OWS</span> <span class="nc">field-value</span> <span class="nc">OWS</span>
+
+<span class="c1">; 字段名</span>
+<span class="nc">field-name</span> <span class="o">=</span> <span class="nc">token</span>
+
+<span class="c1">; 字段值</span>
+<span class="nc">field-value</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span> <span class="nc">field-content</span> <span class="o">/</span> <span class="nc">obs-fold</span> <span class="p">)</span>
+
+<span class="c1">; 字段内容</span>
+<span class="nc">field-content</span> <span class="o">=</span> <span class="nc">field-vchar</span> <span class="o">/</span> <span class="k">SP</span> <span class="o">/</span> <span class="k">HTAB</span>
+
+<span class="c1">; 字段值字符</span>
+<span class="nc">field-vchar</span> <span class="o">=</span> <span class="k">VCHAR</span> <span class="o">/</span> <span class="nc">obs-text</span>
+
+<span class="c1">; 可选的空白</span>
+<span class="nc">OWS</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span> <span class="k">SP</span> <span class="o">/</span> <span class="k">HTAB</span> <span class="p">)</span>
+
+<span class="c1">; 回车换行</span>
+<span class="k">CRLF</span> <span class="o">=</span> <span class="k">CR</span> <span class="k">LF</span>
+
+<span class="c1">; 基本的字符定义</span>
+<span class="k">SP</span> <span class="o">=</span> <span class="l">%x20</span>          <span class="c1">; 空格符</span>
+<span class="k">HTAB</span> <span class="o">=</span> <span class="l">%x09</span>         <span class="c1">; 水平制表符</span>
+<span class="k">CR</span> <span class="o">=</span> <span class="l">%x0D</span>           <span class="c1">; 回车符</span>
+<span class="k">LF</span> <span class="o">=</span> <span class="l">%x0A</span>           <span class="c1">; 换行符</span>
+<span class="k">VCHAR</span> <span class="o">=</span> <span class="l">%x21-7E</span>     <span class="c1">; 可见的US-ASCII字符</span>
+<span class="nc">token</span> <span class="o">=</span> <span class="o">1*</span><span class="nc">tchar</span>
+<span class="nc">tchar</span> <span class="o">=</span> <span class="l">&#34;!&#34;</span> <span class="o">/</span> <span class="l">&#34;#&#34;</span> <span class="o">/</span> <span class="l">&#34;$&#34;</span> <span class="o">/</span> <span class="l">&#34;%&#34;</span> <span class="o">/</span> <span class="l">&#34;&amp;&#34;</span> <span class="o">/</span> <span class="l">&#34;&#39;&#34;</span> <span class="o">/</span> <span class="l">&#34;*&#34;</span> <span class="o">/</span> <span class="l">&#34;+&#34;</span> <span class="o">/</span> <span class="l">&#34;-&#34;</span> <span class="o">/</span> <span class="l">&#34;.&#34;</span> <span class="o">/</span> <span class="l">&#34;^&#34;</span> <span class="o">/</span> <span class="l">&#34;_&#34;</span> <span class="o">/</span> <span class="l">&#34;`&#34;</span> <span class="o">/</span> <span class="l">&#34;|&#34;</span> <span class="o">/</span> <span class="l">&#34;~&#34;</span> <span class="o">/</span> <span class="k">DIGIT</span> <span class="o">/</span> <span class="k">ALPHA</span>
+<span class="nc">obs-text</span> <span class="o">=</span> <span class="l">%x80-FF</span>
+<span class="nc">obs-fold</span> <span class="o">=</span> <span class="k">CRLF</span> <span class="p">(</span> <span class="k">SP</span> <span class="o">/</span> <span class="k">HTAB</span> <span class="p">)</span>
+<span class="k">DIGIT</span> <span class="o">=</span> <span class="l">%x30-39</span>     <span class="c1">; 数字0-9</span>
+<span class="k">ALPHA</span> <span class="o">=</span> <span class="l">%x41-5A</span> <span class="o">/</span> <span class="l">%x61-7A</span>  <span class="c1">; A-Z / a-z</span>
+</code></pre></div><p>在这个例子中，我们使用了ABNF规则描述了简化版的HTTP/1.1请求消息的基本结构。请注意，这个例子并不涵盖完整的HTTP/1.1规范。在实际应用中，你需要根据具体的协议标准来定义更为详细的ABNF规则。</p>
+<p>以下是一个使用ABNF规则表示简化版的JSON（JavaScript Object Notation）数据格式的例子。这个例子仅包含了基本的组成部分，实际的JSON规范要更为详细。我们将关注JSON对象（object）、数组（array）、值（value）、键（key）和字符串（string）。</p>
+<div class="highlight"><pre class="chroma"><code class="language-abnf" data-lang="abnf"><span class="c1">; 简化版的JSON数据格式</span>
+<span class="nc">json</span> <span class="o">=</span> <span class="nc">object</span> <span class="o">/</span> <span class="nc">array</span>
+
+<span class="c1">; JSON对象</span>
+<span class="nc">object</span> <span class="o">=</span> <span class="l">&#34;{&#34;</span> <span class="p">[</span> <span class="nc">key-value-pair</span> <span class="o">*</span><span class="p">(</span> <span class="l">&#34;,&#34;</span> <span class="nc">key-value-pair</span> <span class="p">)</span> <span class="p">]</span> <span class="l">&#34;}&#34;</span>
+<span class="nc">key-value-pair</span> <span class="o">=</span> <span class="nc">string</span> <span class="l">&#34;:&#34;</span> <span class="nc">value</span>
+
+<span class="c1">; JSON数组</span>
+<span class="nc">array</span> <span class="o">=</span> <span class="l">&#34;[&#34;</span> <span class="p">[</span> <span class="nc">value</span> <span class="o">*</span><span class="p">(</span> <span class="l">&#34;,&#34;</span> <span class="nc">value</span> <span class="p">)</span> <span class="p">]</span> <span class="l">&#34;]&#34;</span>
+
+<span class="c1">; JSON值</span>
+<span class="nc">value</span> <span class="o">=</span> <span class="nc">string</span> <span class="o">/</span> <span class="nc">number</span> <span class="o">/</span> <span class="nc">object</span> <span class="o">/</span> <span class="nc">array</span> <span class="o">/</span> <span class="l">&#34;true&#34;</span> <span class="o">/</span> <span class="l">&#34;false&#34;</span> <span class="o">/</span> <span class="l">&#34;null&#34;</span>
+
+<span class="c1">; JSON键</span>
+<span class="nc">key</span> <span class="o">=</span> <span class="nc">string</span>
+
+<span class="c1">; JSON字符串</span>
+<span class="nc">string</span> <span class="o">=</span> <span class="l">%x22</span> <span class="o">*</span><span class="nc">char</span> <span class="l">%x22</span> <span class="c1">; 字符串由双引号包围</span>
+
+<span class="c1">; 字符</span>
+<span class="nc">char</span> <span class="o">=</span> <span class="nc">unescaped</span> <span class="o">/</span> <span class="nc">escaped</span>
+<span class="nc">unescaped</span> <span class="o">=</span> <span class="l">%x20-21</span> <span class="o">/</span> <span class="l">%x23-5B</span> <span class="o">/</span> <span class="l">%x5D-10FFFF</span> <span class="c1">; 所有不需要转义的Unicode字符</span>
+<span class="nc">escaped</span> <span class="o">=</span> <span class="l">%x5C</span> <span class="p">(</span> <span class="l">%x22</span> <span class="o">/</span> <span class="l">%x5C</span> <span class="o">/</span> <span class="l">%x2F</span> <span class="o">/</span> <span class="l">%x62</span> <span class="o">/</span> <span class="l">%x66</span> <span class="o">/</span> <span class="l">%x6E</span> <span class="o">/</span> <span class="l">%x72</span> <span class="o">/</span> <span class="l">%x74</span> <span class="o">/</span> <span class="l">%x75</span> <span class="o">4</span><span class="k">HEXDIG</span> <span class="p">)</span> <span class="c1">; 转义字符序列</span>
+
+<span class="c1">; 数字</span>
+<span class="nc">number</span> <span class="o">=</span> <span class="p">[</span> <span class="l">&#34;-&#34;</span> <span class="p">]</span> <span class="nc">int</span> <span class="p">[</span> <span class="nc">frac</span> <span class="p">]</span> <span class="p">[</span> <span class="nc">exp</span> <span class="p">]</span>
+<span class="nc">int</span> <span class="o">=</span> <span class="l">&#34;0&#34;</span> <span class="o">/</span> <span class="p">(</span> <span class="l">%x31-39</span> <span class="o">*</span><span class="k">DIGIT</span> <span class="p">)</span> <span class="c1">; 非零数字开头的整数</span>
+<span class="nc">frac</span> <span class="o">=</span> <span class="l">&#34;.&#34;</span> <span class="o">1*</span><span class="k">DIGIT</span>
+<span class="nc">exp</span> <span class="o">=</span> <span class="p">(</span> <span class="l">&#34;e&#34;</span> <span class="o">/</span> <span class="l">&#34;E&#34;</span> <span class="p">)</span> <span class="p">[</span> <span class="l">&#34;+&#34;</span> <span class="o">/</span> <span class="l">&#34;-&#34;</span> <span class="p">]</span> <span class="o">1*</span><span class="k">DIGIT</span>
+
+<span class="c1">; 基本的字符定义</span>
+<span class="k">DIGIT</span> <span class="o">=</span> <span class="l">%x30-39</span> <span class="c1">; 数字0-9</span>
+<span class="k">HEXDIG</span> <span class="o">=</span> <span class="k">DIGIT</span> <span class="o">/</span> <span class="l">&#34;A&#34;</span> <span class="o">/</span> <span class="l">&#34;B&#34;</span> <span class="o">/</span> <span class="l">&#34;C&#34;</span> <span class="o">/</span> <span class="l">&#34;D&#34;</span> <span class="o">/</span> <span class="l">&#34;E&#34;</span> <span class="o">/</span> <span class="l">&#34;F&#34;</span> <span class="c1">; 十六进制数字</span>
+</code></pre></div><p>在这个例子中，我们使用了ABNF规则描述了简化版的JSON数据格式的基本结构。请注意，这个例子并不涵盖完整的JSON规范。在实际应用中，你需要根据具体的编程语言标准来定义更为详细的ABNF规则。</p>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>There are numerous private protocols and web services proliferating in the rapid development of internet, bringing much challenge to researchers and network administrators [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0001" target="_blank" rel="noopener noreffer ">1]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0002" target="_blank" rel="noopener noreffer ">2]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0003" target="_blank" rel="noopener noreffer ">3]</a>. Inspection on these unknown protocols is attracting increasingly attentions for its applications in network management and <a href="https://www.sciencedirect.com/topics/computer-science/intrusion-detection" target="_blank" rel="noopener noreffer ">intrusion detection</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0004" target="_blank" rel="noopener noreffer ">4]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0005" target="_blank" rel="noopener noreffer ">5]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0006" target="_blank" rel="noopener noreffer ">6]</a>, and Protocol Reverse Engineering (PRE) has been developed in recent years aiming at the reverse analyzing of those kinds of protocols [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0007" target="_blank" rel="noopener noreffer ">7]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0008" target="_blank" rel="noopener noreffer ">8]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0009" target="_blank" rel="noopener noreffer ">9]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0010" target="_blank" rel="noopener noreffer ">10]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0011" target="_blank" rel="noopener noreffer ">11]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0012" target="_blank" rel="noopener noreffer ">12]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0013" target="_blank" rel="noopener noreffer ">13]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0014" target="_blank" rel="noopener noreffer ">14]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0015" target="_blank" rel="noopener noreffer ">15]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0016" target="_blank" rel="noopener noreffer ">16]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0017" target="_blank" rel="noopener noreffer ">17]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0019" target="_blank" rel="noopener noreffer ">19]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0024" target="_blank" rel="noopener noreffer ">24]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0025" target="_blank" rel="noopener noreffer ">25]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0026" target="_blank" rel="noopener noreffer ">26]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0029" target="_blank" rel="noopener noreffer ">29]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0030" target="_blank" rel="noopener noreffer ">30]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0031" target="_blank" rel="noopener noreffer ">31]</a>. Methods of PRE could be roughly divided into two fields: binary analyzing of unknown protocol implementation [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0011" target="_blank" rel="noopener noreffer ">11]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0012" target="_blank" rel="noopener noreffer ">12]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0013" target="_blank" rel="noopener noreffer ">13]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0014" target="_blank" rel="noopener noreffer ">14]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0015" target="_blank" rel="noopener noreffer ">15]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0016" target="_blank" rel="noopener noreffer ">16]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0017" target="_blank" rel="noopener noreffer ">17]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0032" target="_blank" rel="noopener noreffer ">32]</a> and statistic analyzing of unknown protocol traffic [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0019" target="_blank" rel="noopener noreffer ">19]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0031" target="_blank" rel="noopener noreffer ">31]</a>. Although techniques based on binary analyzing could usually obtain more sophisticated specification of target protocol by monitoring concrete processing of protocol message data [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0013" target="_blank" rel="noopener noreffer ">13]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0014" target="_blank" rel="noopener noreffer ">14]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0015" target="_blank" rel="noopener noreffer ">15]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0016" target="_blank" rel="noopener noreffer ">16]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0017" target="_blank" rel="noopener noreffer ">17]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0024" target="_blank" rel="noopener noreffer ">24]</a>, in most network confrontation or administration scenes where <a href="https://www.sciencedirect.com/topics/engineering/binary-code" target="_blank" rel="noopener noreffer ">binary code</a> of protocols are unavailable (terminal of communication unaccessible), analyzing on unknown protocol message data (net-trace) instead of binary code has to take over this mission on extracting target protocol features or further more protocol message specifications by relative methods in PRE.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在互联网的快速发展中，众多私有协议和Web服务的激增给研究人员和网络管理员带来了很大的挑战。对这些未知协议的检查越来越受到关注，因为它在网络管理和[入侵检测]方面具有应用价值。近年来，协议逆向工程（PRE）已经开发出来，旨在对这些协议进行逆向分析。PRE的方法大致可以分为两个领域：未知协议实现的二进制分析和未知协议流量的统计分析。尽管基于二进制分析的技术通常可以通过监测协议消息数据的具体处理获得更复杂的目标协议规范，但在大多数网络对抗或管理场景中，协议的[二进制代码]都是无法获取的（通信终端无法访问），而对未知协议消息数据（网络跟踪）进行分析，而不是二进制代码，必须接管此任务，通过PRE中的相关方法来提取目标协议特征或进一步的协议消息规范。</p>
+</blockquote>
+<p>Main process of net-trace based PRE usually includes clustering of messages, tokenization, keywords or features extraction, and construction of unknown protocol formats [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0007" target="_blank" rel="noopener noreffer ">7]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0025" target="_blank" rel="noopener noreffer ">25]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0026" target="_blank" rel="noopener noreffer ">26]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0030" target="_blank" rel="noopener noreffer ">30]</a>. Although sometimes clustering could be executed together with other processes [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a> or separately [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, generally speaking, clustering messages into different classes at the very start could greatly facilitate the subsequent analyses, especially format extracting from different messages clusters [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0029" target="_blank" rel="noopener noreffer ">29]</a>. Therefore, clustering of messages, especially clustering aimed at protocol formats, is of great importance in process of net-trace based PRE. On this issue, the key points mainly consist in the <em>measurement of message format distance</em> and <em>implementation of</em> <em><a href="https://www.sciencedirect.com/topics/computer-science/cluster-algorithm" target="_blank" rel="noopener noreffer ">cluster algorithm</a></em>, which are studied intensively in this paper.</p>
+<blockquote>
+<p>翻译：</p>
+<p>基于网络跟踪的 PRE 的主要过程通常包括消息聚类、标记化、关键字或特征提取以及未知协议格式的构建。尽管有时聚类可以与其他过程一起执行或单独执行，但总的来说，在最开始将消息聚类到不同的类别中可以大大促进后续分析，特别是从不同消息集群中提取格式。因此，在基于网络跟踪的 PRE 过程中，消息聚类（尤其是针对协议格式的聚类）具有重要意义。在这个问题上，关键点主要在于消息格式距离的度量和聚类算法的实现，这些将在本文中进行深入研究。</p>
+</blockquote>
+<p>这段话中的聚类具体是什么意思？</p>
+<p>聚类是一种无监督学习方法，它的目的是将一组数据对象（在这里是消息）组织成多个类别或簇，使得相似的对象属于同一个簇，而不相似的对象属于不同的簇。相似性通常通过一种距离度量来定义，例如欧几里得距离、余弦相似度等。聚类算法试图在没有预先知道类别的情况下发现数据中的结构。</p>
+<p>举个例子，假设你有一个电子邮件服务器，上面有大量未分类的电子邮件。你希望对这些电子邮件进行分类，以便了解它们的主题。由于电子邮件的数量非常大，手动分类是不现实的。这时，你可以使用聚类算法。</p>
+<p>聚类算法的一个常见例子是 K-means 算法。K-means 的基本思想是将数据分为 K 个簇，每个簇都有一个中心点。算法首先随机选择 K 个初始中心点，然后迭代地执行以下步骤：</p>
+<ol>
+<li>将每个数据点分配给距离最近的中心点所在的簇。</li>
+<li>根据分配给簇的数据点重新计算簇的中心点。</li>
+</ol>
+<p>这个过程会不断重复，直到簇的中心点不再发生显著变化或达到预定的迭代次数。</p>
+<p>回到电子邮件的例子，你可以将每封电子邮件表示为一个特征向量（例如，通过计算单词频率），然后使用 K-means 算法将这些向量分组。最后，每个簇将包含一组相似的电子邮件，这些电子邮件可能涉及相似的主题。在原始问题中，聚类用于将网络跟踪中的消息按照其格式进行分组，从而更容易地从不同的消息集群中提取协议格式。这对于理解和分析网络协议非常有帮助。</p>
+<p><strong>针对未知协议格式的聚类</strong>是指在没有关于网络协议格式的先验知识的情况下，对网络流量数据（如数据包或消息）进行分类和分析。这种方法试图通过分析网络流量的结构和模式，自动地发现和推断未知协议的特征和格式。它对于分析和识别新出现的协议、恶意流量以及混合在已知协议流量中的未知协议流量非常有用。</p>
+<p>具体来说，针对未知协议格式的聚类首先需要对网络流量数据进行预处理，例如提取特征（如数据包长度、传输层协议类型等）、标记化（将数据包的内容划分为有意义的单元，如字节、字符串等）等。接下来，使用聚类算法将相似的数据包或消息分组到相同的簇中。每个簇中的数据包可能代表了一个特定的协议或协议的某个特征。</p>
+<p>举个例子，假设你捕获了大量网络流量数据，其中包含了多种已知和未知的协议。为了分析这些数据，你可以先对数据包进行预处理，例如提取数据包的长度、首部字段等特征。然后，使用聚类算法（如 K-means 或 DBSCAN）将数据包分组。在这个过程中，相似的数据包会被分到同一个簇中。</p>
+<p>通过观察每个簇的特征，你可能会发现某些簇包含了已知协议的数据包，而其他簇可能包含了未知协议的数据包。这时候，你可以进一步分析未知协议簇中的数据包，提取其结构和模式，以便推断出未知协议的格式和特征。这对于理解新出现的协议、识别恶意流量以及优化网络性能等方面非常有价值。</p>
+<p>For the first point on <em>measurement of message format distance</em>, traditional distance metrics such as <a href="https://www.sciencedirect.com/topics/computer-science/euclidean-distance" target="_blank" rel="noopener noreffer ">Euclidean distance</a> are not suitable when measuring similarity of message formats. Instead, people introduce other distance measure methods to perform this task by analyzing methods taking protocol communication environment [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, message keywords [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>, or message token <a href="https://www.sciencedirect.com/topics/computer-science/sequence-alignment" target="_blank" rel="noopener noreffer ">sequence alignment</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a> into consideration. In some certain situations, the first two methods could get relative ideal results with manual help. But when facing totally unknown protocols without any prior knowledge, sequence alignment based message distance method becomes the best (or maybe the last) choice to measure unknown protocol message format similarity automatically. While in our research, we find that sequence alignment based on comparison of token values or types, like people usually do in PRE [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>, could not fully represent the distance of message format.Those either too overgeneralized or overspecialized methods definitely limit performance of message format distinction.</p>
+<blockquote>
+<p>翻译：</p>
+<p>对于第一点关于消息格式距离的测量，在测量消息格式的相似性时，传统的距离度量如欧氏距离并不适合。相反，人们通过分析考虑协议通信环境、消息关键词或消息标记序列对齐的方法，引入其他距离测量方法来执行这一任务。在某些特定情况下，前两种方法可以在人工帮助下得到相对理想的结果。但是当面对完全未知的协议而没有任何先验知识时，基于序列对齐的消息距离方法成为自动测量未知协议消息格式相似性的最佳（也可能是最后）选择。而在我们的研究中，我们发现基于标记值或类型的比较的序列对齐（sequence alignment based on comparison of token values or types），像人们通常在PRE中做的那样，不能完全代表消息格式的距离。这些过于笼统或过于专业化的方法肯定会限制消息格式区分的性能。</p>
+</blockquote>
+<p>几个概念的简单介绍：</p>
+<ol>
+<li><strong>欧氏距离（Euclidean distance）</strong>：欧氏距离是一个衡量两点之间距离的度量，通常用于计算两个点在欧几里得空间中的距离。在二维空间中，两点之间的欧氏距离可以用勾股定理求解。对于高维空间，其计算公式为：$d(\mathbf{p}, \mathbf{q}) = \sqrt{\sum_{i=1}^n (p_i - q_i)^2}$，其中 $\mathbf{p}$ 和 $\mathbf{q}$ 是两个 $n$ 维向量。然而，对于消息格式的相似性度量，欧氏距离并不适用，因为消息格式之间的差异可能并不是简单的数值差异。</li>
+<li><strong>协议通信环境</strong>：协议通信环境是指在通信协议中，消息是如何在发送者和接收者之间传输的。在这个环境中，通信双方需要遵循一定的格式和规则来发送和接收数据。例如，HTTP 协议是基于 TCP/IP 的应用层协议，用于在客户端和服务器之间传输超文本数据。了解协议通信环境有助于我们更好地理解消息格式的相似性。</li>
+<li><strong>消息关键词</strong>：在通信协议中，消息关键词是用来标识消息内容、类型或功能的特定单词或短语。例如，在HTTP协议中，GET和POST是请求方法的关键词，用于标识请求的类型。通过比较消息中的关键词，我们可以在一定程度上衡量消息格式的相似性。</li>
+<li><strong>消息标记序列对齐的方法</strong>：这种方法是一种基于序列对齐算法的距离测量方法，主要用于衡量两个消息格式的相似性。序列对齐算法在生物信息学中被广泛应用于比较DNA或蛋白质序列。在计算机网络领域，消息标记序列对齐的方法可以通过比较两个消息中的标记值或类型来计算它们之间的相似性。例如，将消息1的标记序列 &ldquo;A-B-C&rdquo; 与消息2的标记序列 &ldquo;A-D-C&rdquo; 对齐，我们可以发现它们有两个相同的标记 &ldquo;A&rdquo; 和 &ldquo;C&rdquo;，从而得到它们之间的相似性。</li>
+</ol>
+<p>For the second point on <em>implementation of cluster algorithm</em>, when clustering messages of different protocols in PRE, researchers use various algorithms, such as PAM [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, UPGMA [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, recursive clustering [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, and so on, to cluster protocol messages into classes representing different formats. However, most of those cluster algorithms rely much on manual involvement, like the choice of cluster numbers in PAM [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, generation strategy from phylogenetic trees to clusters in UPGMA [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, and other parameter setting problems.</p>
+<blockquote>
+<p>翻译：</p>
+<p>对于第二点关于聚类算法的实现，在PRE中对不同协议的消息进行聚类时，研究人员使用各种算法，如PAM、UPGMA、递归聚类等，将协议消息聚集到代表不同格式的类中。然而，大多数这些聚类算法在很大程度上依赖于人工参与，例如在PAM中选择聚类数量，UPGMA中从系统发育树到聚类的生成策略，以及其他参数设置问题。</p>
+</blockquote>
+<p>In this paper, we make an intensive study on the above-mentioned problems and propose our corresponding solutions. To measure format similarity of unknown protocol messages in a proper <a href="https://www.sciencedirect.com/topics/computer-science/granularity" target="_blank" rel="noopener noreffer ">granularity</a>, we propose relative measurements, <em>Token Format Distance (TFD)</em> and <em>Message Format Distance (MFD)</em>, based on core rules of Augmented Backus-Naur Form (ABNF) [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a>. By designing formalized definitions and computing methods of TFD and MFD, we introduce rules of ABNF for the first time to promote reverse analyzing of unknown protocol message format features. To improve automation degree of the clustering process, we introduce two unsupervised cluster quality metrics, <a href="https://www.sciencedirect.com/topics/computer-science/silhouette-coefficient" target="_blank" rel="noopener noreffer ">Silhouette Coefficient</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0034" target="_blank" rel="noopener noreffer ">34]</a> and Dunn Index [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0035" target="_blank" rel="noopener noreffer ">35]</a>, and design an <em>unsupervised clustering strategy</em> to guide the adjustment of parameters and relieve dependence on artificial assignment. A density-based cluster algorithm DBSCAN [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0036" target="_blank" rel="noopener noreffer ">36]</a> is chosen to implement the clustering of messages from unknown protocols.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在这篇论文中，我们对上述问题进行了深入研究，并提出了相应的解决方案。为了以适当的粒度测量未知协议消息的格式相似度，我们提出了基于增强巴科斯-诺尔范式（ABNF）[33]核心规则的相对测量，即令牌格式距离（TFD）和消息格式距离（MFD）。通过设计TFD和MFD的正式定义和计算方法，我们首次将ABNF规则引入未知协议消息格式特征的反向分析。为了提高聚类过程的自动化程度，我们引入了两个无监督聚类质量指标，轮廓系数[34]和邓恩指数[35]，并设计了一个无监督聚类策略来指导参数的调整，减轻对人工分配的依赖。我们选择基于密度的聚类算法DBSCAN [36]来实现未知协议的消息聚类。</p>
+</blockquote>
+<p>Contributions of this paper are summarized as follows:</p>
+<ul>
+<li>We introduce core rules of ABNF for the first time to measure format similarity of basic message token units, and define it as <em>Token Format Distance (TFD)</em>. By designing computation of TFD based on ABNF and Jaccard Index, we make this reverse analysis independent of external assistance. (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">Section 3.1</a>)</li>
+<li>With TFD as computing basis, we define <em>Message Format Distance (MFD)</em> to measure the syntax distance of unknown protocol messages. A <a href="https://www.sciencedirect.com/topics/computer-science/dynamic-programming-algorithm" target="_blank" rel="noopener noreffer ">dynamic programming algorithm</a> MFD measurement is designed to compute MFD as an optimization of <a href="https://www.sciencedirect.com/topics/engineering/needleman" target="_blank" rel="noopener noreffer ">Needleman</a> Wunsch algorithm [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0037" target="_blank" rel="noopener noreffer ">37]</a> and <a href="https://www.sciencedirect.com/topics/computer-science/levenshtein-distance" target="_blank" rel="noopener noreffer ">Levenshtein Distance</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0038" target="_blank" rel="noopener noreffer ">38]</a>, thus we make this reverse analysis process concentrated on internal <a href="https://www.sciencedirect.com/topics/engineering/datum-feature" target="_blank" rel="noopener noreffer ">data features</a>. (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0005" target="_blank" rel="noopener noreffer ">Section 3.2</a>)</li>
+<li>Taking a message <a href="https://www.sciencedirect.com/topics/computer-science/distance-matrix" target="_blank" rel="noopener noreffer ">distance matrix</a> formed by MFD as input, we design an <em>unsupervised clustering strategy</em> to cluster messages with unknown formats into different classes by DBSCAN algorithm, under the direction of two cluster quality metrics, Silhouette Coefficient and Dunn Index. In this way, manual intervention is decreased greatly in the process of PRE. (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0006" target="_blank" rel="noopener noreffer ">Section 3.3</a>)</li>
+</ul>
+<p>To present our method, rest of this paper is organized as follows: we discuss the related work in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0002" target="_blank" rel="noopener noreffer ">Section 2</a>. <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0003" target="_blank" rel="noopener noreffer ">Section 3</a> is the detailed description of our approach. Implementation and evaluations of the proposed method is presented in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0007" target="_blank" rel="noopener noreffer ">Section 4</a>. We conclude this paper and discuss future work in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0013" target="_blank" rel="noopener noreffer ">Section 5</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>本文的贡献总结如下：</p>
+<ul>
+<li>我们首次引入ABNF的核心规则来测量基本消息令牌单位的格式相似度，并将其定义为令牌格式距离（TFD）。通过基于ABNF和杰卡德指数（Jaccard Index）设计TFD计算，我们使这种反向分析独立于外部辅助。（第3.1节）</li>
+<li>以TFD为计算基础，我们定义消息格式距离（MFD）来测量未知协议消息的语法距离。我们设计了一个基于动态规划的MFD测量算法，作为Needleman Wunsch算法[37]和Levenshtein距离[38]的优化，从而使这个反向分析过程集中在内部数据特征上。（第3.2节）</li>
+<li>以由MFD形成的消息距离矩阵为输入，我们设计了一个无监督聚类策略，通过DBSCAN算法将未知格式的消息聚类为不同的类别，受到轮廓系数和邓恩指数（Silhouette Coefficient and Dunn Index）两个聚类质量指标的指导。这样，PRE过程中的人工干预大大减少了。（第3.3节）</li>
+</ul>
+<p>为了介绍我们的方法，本文的其余部分安排如下：第2节讨论相关工作。第3节详细描述了我们的方法。第4节介绍了所提方法的实现和评估。我们在第5节总结本文并讨论未来工作。</p>
+</blockquote>
+<h2 id="2-related-work">2. Related work</h2>
+<p>To deal with the identification and classification of traffic generated by unknown protocols, PRE researchers have made some attempts on reverse analyzing unknown protocols by statistic analyzing when only protocol data is accessible [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0029" target="_blank" rel="noopener noreffer ">29]</a>. Generally speaking, present methods used to distinguish unknown protocol messages in PRE could be divided into three types: message format-oriented [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>, protocol <a href="https://www.sciencedirect.com/topics/computer-science/automaton" target="_blank" rel="noopener noreffer ">automata</a> state oriented [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a> and semantic template oriented [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0029" target="_blank" rel="noopener noreffer ">29]</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>为了处理未知协议产生的流量的识别和分类问题，PRE研究人员在仅能访问协议数据时，通过统计分析对未知协议进行了一些尝试。一般来说，目前用于区分PRE中未知协议消息的方法可以分为三种类型：消息格式为导向]，协议自动机状态为导向，以及语义模板为导向。</p>
+</blockquote>
+<p>The first type is the most commonly used method in PRE. Researchers usually adopt format identifiers/keywords or <a href="https://www.sciencedirect.com/topics/computer-science/sequence-alignment" target="_blank" rel="noopener noreffer ">sequence alignment</a> methods to measure message similarity in aspect of format, and then classify message format clusters in combination with <a href="https://www.sciencedirect.com/topics/computer-science/cluster-algorithm" target="_blank" rel="noopener noreffer ">cluster algorithms</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>第一种类型是PRE中最常用的方法。研究人员通常采用格式标识符/关键字或序列对齐方法来衡量格式方面的消息相似性，然后结合聚类算法对消息格式聚类进行分类。</p>
+</blockquote>
+<p>As a typical sequence alignment algorithm, <a href="https://www.sciencedirect.com/topics/engineering/needleman" target="_blank" rel="noopener noreffer ">Needleman</a> Wunsch (NW) algorithm [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0037" target="_blank" rel="noopener noreffer ">37]</a> is early used in many PRE works like RolePlayer [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a> and Discover [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a> to align messages and data stream. In Discover [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, messages are tokenized into binary and text classes, and a coarse-grained <a href="https://www.sciencedirect.com/topics/computer-science/initial-clustering" target="_blank" rel="noopener noreffer ">initial clustering</a> based on NW algorithm is used to align message token patterns, followed by a fine-grained recursive clustering based on format distinguishers identified by artificial defined property and semantics. As a pioneering research work on message format analysis in PRE, Discover expands this area and has much influence on later works [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>作为典型的序列对齐算法，Needleman Wunsch（NW）算法很早就被用于许多PRE成果，如RolePlayer和Discover，以对齐消息和数据流。在Discover中，消息被划分为二进制和文本类别，基于NW算法的粗粒度初始聚类用于对齐消息令牌模式，然后基于人工定义的属性和语义识别的格式区分器进行细粒度递归聚类。作为PRE领域关于消息格式分析的开创性研究工作，Discover拓展了这个领域并对后来的研究产生了很大影响。</p>
+</blockquote>
+<p>这段文字中提到了三个与序列对齐和模式识别相关的算法：Needleman-Wunsch (NW) 算法、RolePlayer 和 Discover。下面分别对这三个算法进行介绍。</p>
+<ol>
+<li>
+<p><strong>Needleman-Wunsch (NW) 算法</strong>：这是一种典型的序列对齐算法，用于寻找两个序列之间的最佳全局对齐。它通过动态规划算法来生成一个得分矩阵，用于衡量两个序列的相似度。NW算法的核心思想是通过遍历两个序列，计算它们之间的匹配和不匹配得分，以找到最优的对齐方式。</p>
+<p>使用背景：在生物信息学、自然语言处理和模式识别等领域，NW算法被广泛应用于分析和比较序列数据。</p>
+</li>
+<li>
+<p><strong>RolePlayer</strong>：这是一个用于PRE（Pattern Recognition Engine，模式识别引擎）的工作的算法。RolePlayer利用NW算法对数据流和消息进行序列对齐，以识别序列中的特定模式。尽管这段文字没有提供更多关于RolePlayer的详细信息，但我们可以推测，它可能是一种基于序列对齐的模式识别方法。</p>
+<p>使用背景：RolePlayer可能用于数据挖掘、网络安全和通信等领域，对数据流和消息进行模式识别和分类。</p>
+</li>
+<li>
+<p><strong>Discover</strong>：这是一种用于PRE的消息格式分析算法。Discover首先将消息划分为二进制和文本类别，并使用基于NW算法的粗粒度初始聚类对消息标记模式进行对齐。接下来，它使用基于人工定义的属性和语义识别的格式区分器进行细粒度的递归聚类。</p>
+<p>使用背景：Discover是一项关于PRE消息格式分析的开创性研究工作，对后续相关工作产生了很大影响。Discover可能应用于消息传输、数据挖掘和网络安全等领域，对数据流和消息进行格式分析和识别。</p>
+</li>
+</ol>
+<p>这段文字介绍了三个与序列对齐和模式识别相关的算法：Needleman-Wunsch (NW) 算法、RolePlayer 和 Discover。这些算法在数据挖掘、网络安全和通信等领域具有广泛的应用前景，用于分析和识别序列数据和消息格式。</p>
+<p>In [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, Netzob uses <a href="https://www.sciencedirect.com/topics/computer-science/semantic-information" target="_blank" rel="noopener noreffer ">semantic information</a> and contextual data collected from control or monitor of protocol implementations, or manually specified contextual information to cluster unknown protocol messages based on an extension of NW algorithm. With the facilitate of protocol implementation and manual intervention, Netzob outperforms several state-of-the-art message cluster and field boundary identification methods [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>. Lately in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, messages are clustered by an agglomerative hierarchical <a href="https://www.sciencedirect.com/topics/computer-science/clustering-algorithm" target="_blank" rel="noopener noreffer ">clustering algorithm</a> with complete linkage <a href="https://www.sciencedirect.com/topics/computer-science/clustering-criterion" target="_blank" rel="noopener noreffer ">clustering criteria</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0039" target="_blank" rel="noopener noreffer ">39]</a> based on <a href="https://www.sciencedirect.com/topics/computer-science/jaccard-similarity" target="_blank" rel="noopener noreffer ">Jaccard similarity</a> coefficient [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0040" target="_blank" rel="noopener noreffer ">40]</a> of n-gram frequency distributions, before <a href="https://www.sciencedirect.com/topics/computer-science/packet-structure" target="_blank" rel="noopener noreffer ">packet structure</a> extraction based on a segment-based multiple sequence alignment implementation Dialign-2 [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0041" target="_blank" rel="noopener noreffer ">41]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0042" target="_blank" rel="noopener noreffer ">42]</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在文献[23]中，Netzob 使用从协议实现的控制或监控中收集的语义信息和上下文数据，或手动指定的上下文信息，基于 NW 算法的扩展对未知协议消息进行聚类。在协议实现和人工干预的帮助下，Netzob 超越了几种最先进的消息聚类和字段边界识别方法[20]，[21]。最近在文献[22]中，在基于 Dialign-2 的段落为基础的多序列对齐实现之前，消息通过一种基于 Jaccard 相似性系数[40]的 n-gram 频率分布的凝聚层次聚类算法进行聚类，其中采用了完全链接聚类准则[39]。</p>
+</blockquote>
+<p><strong>凝聚层次聚类算法</strong>：这是一种自底向上的聚类方法，其中数据点最初被视为单独的簇，然后通过迭代地合并最接近的簇来构建层次结构。在这里，采用了完全链接聚类准则，它计算簇间所有数据点对之间的距离，并以最大距离作为簇间距离。聚类过程基于 Jaccard 相似性系数，这是一种衡量集合相似性的指标，用于计算 n-gram 频率分布之间的相似性。</p>
+<p><strong>Jaccard similarity coefficient</strong></p>
+<p>在引文中，Jaccard 相似性系数（Jaccard similarity coefficient）是一种用于衡量两个集合之间相似度的指标。Jaccard 系数的定义如下：</p>
+<pre><code>Jaccard(A, B) = (A ∩ B) / (A ∪ B)
+</code></pre><p>其中，<code>A</code> 和 <code>B</code> 分别表示两个集合，<code>A ∩ B</code> 表示集合 A 和 B 的交集元素数量，<code>A ∪ B</code> 表示集合 A 和 B 的并集元素数量。Jaccard 系数的值在 0 和 1 之间，其中 0 表示两个集合完全不相似，1 表示两个集合完全相同。</p>
+<p>在给定的文章段落中，Jaccard 相似性系数被用于衡量 n-gram 频率分布之间的相似性。n-gram 是一种将文本或序列划分为 n 个连续字符的方法。通过计算两个 n-gram 频率分布之间的 Jaccard 系数，可以得到它们之间的相似性。</p>
+<p>下面是一个简单的示例：</p>
+<p>假设我们有两个字符串：</p>
+<pre><code>A = &quot;abcdefg&quot;
+B = &quot;bcdefgh&quot;
+</code></pre><p>我们可以将这两个字符串划分为 2-gram（即，n = 2）：</p>
+<pre><code>A 的 2-grams: {ab, bc, cd, de, ef, fg}
+B 的 2-grams: {bc, cd, de, ef, fg, gh}
+</code></pre><p>计算 Jaccard 系数：</p>
+<pre><code>交集 (A ∩ B) = {bc, cd, de, ef, fg}，数量为 5
+并集 (A ∪ B) = {ab, bc, cd, de, ef, fg, gh}，数量为 7
+
+Jaccard(A, B) = 5 / 7 ≈ 0.71
+</code></pre><p>在这个例子中，两个字符串的 Jaccard 相似性系数为 0.71，表示它们具有较高的相似性。</p>
+<p>Researches on second type usually have similar procedure of protocol automata reverse including message classification, state type labeling and state machine inferring. In Prospex [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a> and Veritas [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>, messages are clustered using Partitioning Around Medoids(PAM) algorithm based on message features similarity measured by Jaccard Index [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0043" target="_blank" rel="noopener noreffer ">43]</a> before further building protocol state machine. These message features are obtained from binary analysis and system configuration in Prospex, and represented by frequency subsequences which are ascertained by K-S test in Veritas, respectively.</p>
+<blockquote>
+<p>翻译：</p>
+<p>第二种类型的研究通常有类似的协议自动机逆向程序，包括消息分类、状态类型标记和状态机推断。在Prospex[18]和Veritas[28]中，在进一步建立协议状态机之前，使用Partitioning Around Medoids(PAM)算法根据Jaccard Index[43]测量的消息特征相似度对消息进行聚类。这些消息特征在Prospex中是通过二进制分析和系统配置获得的，在Veritas中则是通过K-S测试确定的频率子序列表示。</p>
+</blockquote>
+<p>The last type including [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a> and [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0029" target="_blank" rel="noopener noreffer ">29]</a> is minority work on protocol message <a href="https://www.sciencedirect.com/topics/computer-science/semantic-analysis" target="_blank" rel="noopener noreffer ">semantic analysis</a>. Krueger et al developed ASAP in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>. By constructing an alphabet of tokens derived by delimiters and n-gram, ASAP maps message payloads to vectors, and use <a href="https://www.sciencedirect.com/topics/computer-science/matrix-factorization" target="_blank" rel="noopener noreffer ">matrix factorization</a> to identify base directions and coordinate tuples. These coordinate tuples are remapped to semantical representation of messages by a <a href="https://www.sciencedirect.com/topics/computer-science/greedy-algorithm" target="_blank" rel="noopener noreffer ">greedy algorithm</a> to concatenate n-grams into message semantic templates. As an extension of ASAP, PRISMA [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0029" target="_blank" rel="noopener noreffer ">29]</a> uses a similar method of matrix factorization to map messages into events, and further inferences a state machine represented by Markov Model to stand for the grammar of target protocol.</p>
+<blockquote>
+<p>翻译：</p>
+<p>最后一类包括[20]和[29]是少数人的协议消息语义分析工作。Krueger等人在[20]中开发了ASAP。通过构建一个由分隔符和n-gram衍生的标记字母表，ASAP将消息有效载荷映射为向量，并使用矩阵分解来识别基本方向和坐标图元。这些坐标图元通过一个贪心的算法被重新映射为消息的语义表示，将n-grams连接成消息语义模板。作为ASAP的扩展，PRISMA[29]使用类似的矩阵分解方法将消息映射为事件，并进一步推断由马尔可夫模型代表的状态机，以代表目标协议的语法。</p>
+</blockquote>
+<p>To sum up, clustering based on NW algorithm is the most commonly used method to classify unknown protocol messages with different formats, but there are still some deficiencies remain: <em>dependence on external assistance, less consideration of format, and parameter selection of cluster algorithm</em>. Firstly, methods in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a> have much dependence on artificial participation as well as system or environment information, such as recognition of format distinguishers in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a> and contextual information needed in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, and this weakens the ability of PRE in non-cooperate condition. Secondly, the NW algorithm applied in these researches is usually based on the comparison of token values, but the similarity of token format is less considered, and this limits the performance of message format differentiating. The type-based NW algorithm in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a> and contextual semantic information based extension of it in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a> could be regarded as initial attempts on grammar oriented extension version, which deserves more study. Lastly, cluster algorithms used in former researches usually have the problem of parameter selection, which greatly reduce the automation of PRE. As for the latter two types of message clustering we discuss above, there are no theoretical proves of mapping relationships between <a href="https://www.sciencedirect.com/topics/computer-science/state-automaton" target="_blank" rel="noopener noreffer ">automata state</a> type or message semantic and message format type so far so good, therefore, essentially speaking, methods of latter two types are not suitable for message format clustering in PRE.</p>
+<blockquote>
+<p>翻译：</p>
+<p>总之，基于 NW 算法的聚类是将具有不同格式的未知协议消息进行分类的最常用方法，但仍然存在一些不足：依赖外部辅助、格式考虑不足和聚类算法的参数选择。首先，[21]、[22]、[23]、[27] 等方法在很大程度上依赖人工参与以及系统或环境信息，例如 [21] 中的格式区分符识别和 [23] 中所需的上下文信息，这削弱了非合作条件下 PRE 的能力。其次，这些研究中应用的 NW 算法通常是基于令牌值的比较，但很少考虑令牌格式的相似性，这限制了消息格式区分的性能。[21] 中的基于类型的 NW 算法以及 [23] 中基于上下文语义信息的扩展可以看作是面向语法扩展版本的初步尝试，值得进一步研究。最后，前述研究中使用的聚类算法通常存在参数选择问题，这大大降低了 PRE 的自动化程度。</p>
+<p>至于我们上面讨论的后两种类型的消息聚类，迄今为止，并没有关于自动机状态类型或消息语义与消息格式类型之间映射关系的理论证明，因此，从本质上讲，后两种方法不适用于 PRE 中的消息格式聚类。</p>
+</blockquote>
+<p>在这段话中，作者提到了基于 Needleman-Wunsch (NW) 算法的聚类方法在处理未知协议消息分类时的一些不足之处和相关研究。首先，我们需要了解 NW 算法是一种序列对齐算法，通常用于生物信息学中的 DNA 序列和蛋白质序列对齐。在这里，NW 算法被用于对未知协议消息进行分类。</p>
+<p>这段话提到的具体例子如下：</p>
+<ol>
+<li>文献 [21]：这篇研究中，NW 算法用于识别协议消息中的格式区分符。然而，这项方法在很大程度上依赖人工参与和系统或环境信息。这种依赖性削弱了在非合作条件下协议逆向工程（PRE）的能力。简言之，为了使这种方法有效，你需要对系统或环境有足够的了解，而这通常难以实现。</li>
+<li>文献 [23]：这篇研究中，NW 算法被扩展为基于上下文语义信息。然而，这种方法同样需要大量的上下文信息，这在实际应用中可能难以获得。这同样削弱了 PRE 的能力。</li>
+<li>NW 算法的局限性：在这些研究中使用的 NW 算法通常是基于令牌值的比较，但很少考虑令牌格式的相似性。这限制了消息格式区分的性能。文献 [21] 中基于类型的 NW 算法和文献 [23] 中基于上下文语义信息的扩展可以看作是面向语法扩展版本的初步尝试，值得进一步研究。</li>
+<li>聚类算法参数选择问题：在前述研究中使用的聚类算法通常存在参数选择问题。这意味着为了获得有效的结果，需要手动选择适当的参数，这大大降低了 PRE 的自动化程度。</li>
+</ol>
+<p>总之，这段文字讨论了基于 NW 算法的聚类方法在处理未知协议消息分类时的一些不足之处，并提到了一些具体的研究例子（如文献 [21] 和 [23]）。这些不足包括对外部辅助的依赖、格式考虑不足和聚类算法参数选择问题。</p>
+<p><strong>非合作条件下协议逆向工程（PRE）</strong></p>
+<p>非合作条件下协议逆向工程（PRE）是指在对通信协议进行逆向分析时，分析者无法获得协议设计者的直接帮助或协议相关的文档和源代码。在这种情况下，分析者需要通过观察协议的实际通信行为、分析网络流量和捕获的数据包等手段来推断协议的工作原理和结构。这种分析通常比较困难，因为分析者需要在缺乏直接信息的情况下理解协议的细节。</p>
+<p>非合作条件下 PRE 的挑战包括：</p>
+<ol>
+<li>缺乏关于协议设计、实现和运行环境的详细信息。</li>
+<li>很难直接获取协议的源代码或文档。</li>
+<li>需要通过分析网络流量和捕获的数据包来推测协议的工作原理。</li>
+</ol>
+<p>在上文提到的 NW 算法在处理未知协议消息分类时的不足之处中，依赖外部辅助（如人工参与和系统或环境信息）会削弱非合作条件下 PRE 的能力，因为这些外部辅助很难在实际应用中获得。因此，寻求更加自动化和独立的方法来处理协议逆向工程问题是研究的重要方向。</p>
+<p>Contributions of this paper solves these problems in three ways. Format attribute similarity is extracted from message internal content by TFD (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">Section 3.1</a>) integrating grammar information in token comparison without any environment knowledge, thus relieves the external dependence. Based on TFD, we define MFD (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0005" target="_blank" rel="noopener noreffer ">Section 3.2</a>) and develop another extension of NW algorithm from a novel perspective of syntax similarity to measure message distance, and in this way, the comparison of messages is concentrated on format. By introducing cluster quality metrics to direct the tuning of parameters, we design an unsupervised clustering strategy to separate unknown protocol messages by a density based cluster algorithm (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0006" target="_blank" rel="noopener noreffer ">Section 3.3</a>), so to solve the parameter selection problem. Concrete work of this paper is explained in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0003" target="_blank" rel="noopener noreffer ">Section 3</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>本文的贡献通过三种方式解决了这些问题。通过 TFD（第 3.1 节）从消息内部内容中提取格式属性相似性，整合令牌比较中的语法信息，无需任何环境知识，从而减轻了外部依赖。</p>
+<p>基于 TFD，我们定义了 MFD（第 3.2 节），并从语法相似性的新颖角度开发了 NW 算法的另一个扩展，以衡量消息距离，这样，消息的比较就集中在格式上。</p>
+<p>通过引入聚类质量指标指导参数的调整，我们设计了一种基于密度的聚类算法（第 3.3 节）分离未知协议消息的无监督聚类策略，以解决参数选择问题。本文的具体工作详见第 3 节。</p>
+</blockquote>
+<h2 id="3-unsupervised-clustering-based-on-format-similarity">3. Unsupervised clustering based on format similarity</h2>
+<p>As introduced in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0001" target="_blank" rel="noopener noreffer ">Section 1</a>, work of this paper contains mainly three processes: definition and computing of Token Format Distance(TFD), define and measurement of Message Format Distance (MFD), and unsupervised clustering strategy based on MFD, as shown in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0001" target="_blank" rel="noopener noreffer ">Fig. 1</a>.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr1_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr1_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr1_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr1_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr1_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 1. Structure of this paper.</p>
+<p>First of all, payloads of hybrid unknown protocol packages are extracted as target of our work to be clustered. For each message without any analysis, data inside is separated into tokens of bytes with possible attributes attached based on <a href="https://www.sciencedirect.com/topics/computer-science/backus-naur-form" target="_blank" rel="noopener noreffer ">ABNF</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a>. Based on the attribute sets of tokens, we use Jaccard Index [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0044" target="_blank" rel="noopener noreffer ">44]</a> to represent the similarity of tokens in different message, i.e. TFD (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">Section 3.1</a>).</p>
+<p>Then, based on TFD, we define MFD in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0005" target="_blank" rel="noopener noreffer ">Section 3.2</a> to measure message similarity in aspect of syntax and an optimized message token sequence alignment algorithm is designed based on NW algorithm and <a href="https://www.sciencedirect.com/topics/computer-science/levenshtein-distance" target="_blank" rel="noopener noreffer ">LD</a> algorithm.</p>
+<p>With the <a href="https://www.sciencedirect.com/topics/computer-science/distance-matrix" target="_blank" rel="noopener noreffer ">distance matrix</a> built in last step by MFD as input, we design an unsupervised clustering strategy in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0006" target="_blank" rel="noopener noreffer ">Section 3.3</a> to divide messages into classes following different formats with the application of DBSCAN algorithm [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0036" target="_blank" rel="noopener noreffer ">36]</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>首先，我们提取混合未知协议数据包的有效负载作为目标进行聚类。对于每个未经分析的消息，我们根据 <a href="https://www.sciencedirect.com/topics/computer-science/backus-naur-form" target="_blank" rel="noopener noreffer ">ABNF（巴科斯-诺尔范式）</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a> 将数据内部划分为带有可能属性的字节标记。基于标记的属性集，我们使用 Jaccard 指数 [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0044" target="_blank" rel="noopener noreffer ">44]</a> 来表示不同消息中标记的相似性，即 TFD（<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">第 3.1 节</a>）。</p>
+<p>然后，基于 TFD，我们在<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0005" target="_blank" rel="noopener noreffer ">第 3.2 节</a>中定义 MFD 以测量语法方面的消息相似性，并基于 NW 算法和 <a href="https://www.sciencedirect.com/topics/computer-science/levenshtein-distance" target="_blank" rel="noopener noreffer ">LD（莱文斯坦距离）</a> 算法设计了一种优化的消息标记序列对齐算法。</p>
+<p>借助上一步使用 MFD 构建的<a href="https://www.sciencedirect.com/topics/computer-science/distance-matrix" target="_blank" rel="noopener noreffer ">距离矩阵</a>作为输入，我们在<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0006" target="_blank" rel="noopener noreffer ">第 3.3 节</a>设计了一种无监督聚类策略，采用 DBSCAN 算法 [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0036" target="_blank" rel="noopener noreffer ">36]</a> 将遵循不同格式的消息划分为不同类。</p>
+</blockquote>
+<p>读完了3.3好像没有具体讲无监督聚类策略，只是列了两个判断聚类效果的指标😅</p>
+<h3 id="31-token-format-distance-measurement">3.1. Token format distance measurement</h3>
+<p>Generally speaking, when reverse analyzing formats of unknown protocols, the differentiating problem of messages comes down to the measurement of tokens that make up messages. In existing works, tokenization is usually realized by n-gram [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>, or data type (binary or text) [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>. The former tokenization was introduced from natural language process in the first place, and the later method is assigned manually. In [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a>, as the basic semantic unit, each half-byte is attached by a multiset of semantic tags come from monitoring of environment or manually assign, and then these units are compared according to a self-defined similarity function.</p>
+<blockquote>
+<p>翻译：</p>
+<p>一般来说，在对未知协议的格式进行逆向分析时，消息的区分问题归结为对组成消息的标记（tokens）的度量。在现有的工作中，标记化（tokenization）通常是通过 n-gram [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0020" target="_blank" rel="noopener noreffer ">20]</a>，[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>，[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a> 或数据类型（二进制或文本）[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>来实现的。前者的标记化最初是从自然语言处理中引入的，后者是手动分配的。在 [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0023" target="_blank" rel="noopener noreffer ">23]</a> 中，作为基本语义单位，每个半字节都附加有一个从环境监控或手动分配的语义标签的多重集合，然后根据自定义的相似性函数比较这些单位。</p>
+</blockquote>
+<p>标记化问题是指将复杂的数据结构（如网络通信协议的消息）分解为更小、更易于处理的基本单位（如标记或tokens）的过程。这些基本单位可以用来表示数据的组成部分，从而帮助研究人员或算法更好地理解和分析数据。在网络通信协议的逆向分析中，标记化是关键步骤，因为它有助于揭示协议的底层结构和规则。</p>
+<p>In this paper, we trace the tokenization problem back to the basic official definition of network communication protocols, RFC documents [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0045" target="_blank" rel="noopener noreffer ">45]</a>, and partition protocol messages into tokens by byte, which is used to define core rules of protocols as basic units. Those core rules of message format minimum unit form a series of value sets indicating different value types when forming combined grammatical units.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在本文中，我们将标记化问题追溯到网络通信协议的基本官方定义，即 RFC 文档 [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a>，[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0045" target="_blank" rel="noopener noreffer ">45]</a>，并将协议消息按字节划分为标记，这些标记用于定义协议的核心规则作为基本单位。消息格式最小单位的这些核心规则形成一系列值集，表示在形成组合语法单位时的不同值类型。</p>
+</blockquote>
+<p>For values of different offsets in diverse messages from unknown protocols, they could be recognized as varied grammar elements, and their attributes would become explicit after context grammar inference. While at the first beginning of protocol reverse engineering, source material that could be used as basis of clustering of message format, is remained to be those core rules of ABNF [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a> grammar of each unknown protocols. Although in fact, there could be private protocols abandon this basic rules of protocol grammar, or even use other coding scheme other than ASCII, we believe this kind of protocols are seldom exist and reverse analyzing of them should be totally redesigned specifically.</p>
+<blockquote>
+<p>翻译：</p>
+<p>对于来自未知协议的不同消息中不同偏移量的值，它们可以被识别为不同的语法元素，而在上下文语法推断之后，它们的属性将变得明确。</p>
+<p>然而，在协议逆向工程的最初阶段，可以用作消息格式聚类基础的原始材料，仍然是每个未知协议的 ABNF [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a> 语法的核心规则。</p>
+<p>尽管实际上可能存在放弃协议语法基本规则的私有协议，甚至使用其他编码方案而非 ASCII，但我们认为这类协议很少存在，且对它们的逆向分析应该完全重新特别设计。</p>
+</blockquote>
+<p>We <a href="https://www.sciencedirect.com/topics/engineering/rearranges" target="_blank" rel="noopener noreffer ">rearrange</a> these core rules defined in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0033" target="_blank" rel="noopener noreffer ">33]</a> into mappings of attributes and value sets as in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#tbl0001" target="_blank" rel="noopener noreffer ">Table 1</a>.</p>
+<p>Table 1. Core rules of ABNF.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Attribute</th>
+<th align="left">Value Set</th>
+<th align="left">Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">CR</td>
+<td align="left">0x0D</td>
+<td align="left">carriage return （回车）</td>
+</tr>
+<tr>
+<td align="left">LF</td>
+<td align="left">0x0A</td>
+<td align="left">linefeed（换行）</td>
+</tr>
+<tr>
+<td align="left">HTAB</td>
+<td align="left">0x09</td>
+<td align="left">horizontal tab（制表符）</td>
+</tr>
+<tr>
+<td align="left">SP</td>
+<td align="left">0x20</td>
+<td align="left">space</td>
+</tr>
+<tr>
+<td align="left">DQUOTE</td>
+<td align="left">0x22</td>
+<td align="left">double quote</td>
+</tr>
+<tr>
+<td align="left">ALPHA</td>
+<td align="left">0x41-0x5A, 0x61-0x7A</td>
+<td align="left">A-Z, a-z</td>
+</tr>
+<tr>
+<td align="left">CHAR</td>
+<td align="left">0x01-0x7F</td>
+<td align="left">any 7-bit US-ASCII character</td>
+</tr>
+<tr>
+<td align="left">CTL</td>
+<td align="left">0x00-0x1F</td>
+<td align="left">controls（控制符）</td>
+</tr>
+<tr>
+<td align="left">DIGIT</td>
+<td align="left">0x30-0x39</td>
+<td align="left">0–9</td>
+</tr>
+<tr>
+<td align="left">HEXDIG</td>
+<td align="left">0x30-0x39, 0x41-0x46</td>
+<td align="left">digit and A-F</td>
+</tr>
+<tr>
+<td align="left">OCTET</td>
+<td align="left">0x00-0xFF</td>
+<td align="left">8 bits of data</td>
+</tr>
+<tr>
+<td align="left">VCHAR</td>
+<td align="left">0x21-0x7E</td>
+<td align="left">visible (printing) characters（可见字符）</td>
+</tr>
+</tbody>
+</table>
+<p>In this case, the format similarity of values from different messages is transformed to the measurement of attribute sets these two values might possess. As researchers usually do in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, Jaccard Distance (JD) based on Jaccard Index (JI) is applied to compute the token distances. Some notations and arrangements are given here in advance.</p>
+<p>As the message clustering process is usually a step before more intricate analysis on unknown protocols, such as partition of message fields, we define message tokens to be successive bytes and assign them the attributes (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#eq0001" target="_blank" rel="noopener noreffer ">Eq. (1)</a>) they might process (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#tbl0001" target="_blank" rel="noopener noreffer ">Table 1</a>) as elements of fields they belong to.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在这种情况下，来自不同消息的值的格式相似性被转化为这两个值可能具有的属性集的度量。正如研究人员通常在[18]、[22]中所做的那样，基于Jaccard指数（JI）的Jaccard距离（JD）被用来计算标记之间的距离。这里提前给出了一些符号和安排。</p>
+<p>由于消息聚类过程通常是在对未知协议进行更复杂分析之前的步骤，例如消息字段的划分，我们将消息标记定义为连续字节，并为它们分配属性（等式（1）），作为它们所属字段的元素（表1）。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230406165750357.png"
+        data-srcset="/images/Clustering.assets/image-20230406165750357.png, /images/Clustering.assets/image-20230406165750357.png 1.5x, /images/Clustering.assets/image-20230406165750357.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230406165750357.png"
+        title="image-20230406165750357" /></p>
+<p>For two tokens $m$ and $n$, their format element attribute sets are: $A_{m} = {a_1, a_2, &hellip;}$ and $A_{n} = {a_1, a_2, &hellip;}$  where $a_i ∈ Attr$.</p>
+<p>Take part of an HTTP message for demonstration as shown in Table 2. According to core rules of ABNF, the first byte ‘P’ with hexadecimal 0x50 will be assigned with attributes ALPHA, CHAR, OCTET, VCHAR, which has the same attributes with other subsequent characters in same field like ‘O’, ‘S’, ‘T’, and ‘H’, ‘T’, ‘P’ in next text field. Marker symbols such as ‘ ’, ‘/’, ‘\r’, and ‘\n’ have partial similar attributes. In this way, original data bytes are labeled by different attribute sets, through which their syntax similarity could be measured. These labels might seem to be a little bit complicated at first sight. But when we are facing a totally unknown protocol and no knowledge of it is available, analyzing data attribute from the very basic elements becomes a relative basic and reliable idea.</p>
+<blockquote>
+<p>翻译：</p>
+<p>对于两个标记$m$和$n$，它们的格式元素属性集分别为：$A_{m} = {a_1, a_2, &hellip;}$ 和 $A_{n} = {a_1, a_2, &hellip;}$，其中 $a_i ∈ Attr$。</p>
+<p>以表2中展示的HTTP消息的一部分为例。根据ABNF的核心规则，第一个字节&rsquo;P&rsquo;（十六进制0x50）将被赋予属性ALPHA、CHAR、OCTET、VCHAR，这与同一字段中的其他后续字符（如&rsquo;O&rsquo;、&lsquo;S&rsquo;、&lsquo;T&rsquo;）以及下一个文本字段中的&rsquo;H&rsquo;、&lsquo;T&rsquo;、&lsquo;P'具有相同的属性。标记符号如'<code> </code>&rsquo;、&lsquo;<code>/</code>&rsquo;、&lsquo;<code>\r</code>'和'<code>\n</code>'具有部分相似的属性。通过这种方式，原始数据字节被不同的属性集标记，通过这些标记可以衡量它们的语法相似性。这些标签乍一看可能有点复杂。但是，当我们面临一个完全未知的协议且没有可用的知识时，从最基本的元素分析数据属性成为一个相对基本且可靠的想法。</p>
+</blockquote>
+<p>Table 2. Example HTTP message token attributes.</p>
+<table>
+<thead>
+<tr>
+<th align="left">content</th>
+<th align="left">hex</th>
+<th align="left">attribute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">P</td>
+<td align="left">50</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">O</td>
+<td align="left">4F</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">S</td>
+<td align="left">53</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">T</td>
+<td align="left">54</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">20</td>
+<td align="left">{<em>SP, CHAR, OCTET</em>}</td>
+</tr>
+<tr>
+<td align="left">/</td>
+<td align="left">2F</td>
+<td align="left">{<em>CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">a</td>
+<td align="left">61</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">20</td>
+<td align="left">{<em>SP, CHAR, OCTET</em>}</td>
+</tr>
+<tr>
+<td align="left">H</td>
+<td align="left">48</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">T</td>
+<td align="left">54</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">T</td>
+<td align="left">54</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">P</td>
+<td align="left">50</td>
+<td align="left">{<em>ALPHA, CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">/</td>
+<td align="left">2F</td>
+<td align="left">{<em>CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">31</td>
+<td align="left">{<em>CHAR, DIGIT, HEXDIG, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">.</td>
+<td align="left">2E</td>
+<td align="left">{<em>CHAR, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">31</td>
+<td align="left">{<em>CHAR, DIGIT, HEXDIG, OCTET, VCHAR</em>}</td>
+</tr>
+<tr>
+<td align="left">\r</td>
+<td align="left">0D</td>
+<td align="left">{<em>CTL, CR, CHAR, OCTET</em>}</td>
+</tr>
+<tr>
+<td align="left">\n</td>
+<td align="left">0A</td>
+<td align="left">{<em>CTL, LF, CHAR, OCTET</em>}</td>
+</tr>
+</tbody>
+</table>
+<p>To measure the similarity of attribute sets attached to message tokens, we ues Jaccard Index and corresponding Jaccard Distance to represent relative syntax attribute similarity and difference.</p>
+<blockquote>
+<p>翻译：</p>
+<p>为了衡量附加在信息标记上的属性集的相似性，我们使用Jaccard指数和相应的Jaccard距离来表示相对语法属性的相似性和差异。</p>
+</blockquote>
+<p>As shown in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0002" target="_blank" rel="noopener noreffer ">Fig. 2</a>, we assign four sets of attributes: $A_{11}, A_{10}, A_{01}, A_{00}$:</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230406170622885.png"
+        data-srcset="/images/Clustering.assets/image-20230406170622885.png, /images/Clustering.assets/image-20230406170622885.png 1.5x, /images/Clustering.assets/image-20230406170622885.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230406170622885.png"
+        title="image-20230406170622885" /></p>
+<p>where <em>A</em>11 stands for the intersection of two token attribute set i.e. set of attributes both <em>m</em> and <em>n</em> have. Union of <em>A</em>10, <em>A</em>01, <em>A</em>11 indicates all attributes that <em>Am</em> and <em>An</em> cover.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr2_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr2_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr2_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr2_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr2_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 2. Attribute sets of token <em>m</em> and <em>n</em>.</p>
+<p>Thereupon, JI and JD could be defined by <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#eq0006" target="_blank" rel="noopener noreffer ">Eqs. (6)</a> and <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#eq0007" target="_blank" rel="noopener noreffer ">(7)</a>.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230406171143187.png"
+        data-srcset="/images/Clustering.assets/image-20230406171143187.png, /images/Clustering.assets/image-20230406171143187.png 1.5x, /images/Clustering.assets/image-20230406171143187.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230406171143187.png"
+        title="image-20230406171143187" /></p>
+<p>In this way, the TFD represented by Jaccard Index of token m and n,  $TFD(m,n) = D_J (m,n)$ could be used to measure their syntax difference, which will be used to make up corresponding message distance. This is explained in Section 3.2. Fig. 3 shows an demonstration of token compare of two HTTP message, together with relative token syntax labeling. Color depth of those cells stands for relative token distance. The darker of one cell, the corresponding tokens have more syntax similarity.</p>
+<blockquote>
+<p>翻译：</p>
+<p>通过这种方式，由标记m和n的Jaccard指数表示的TFD，$TFD(m,n) = D_J (m,n)$ 可用于衡量它们的语法差异，这将用于构成相应的消息距离。这在第3.2节中有解释。</p>
+<p>图3展示了两个HTTP消息的标记比较，以及相关的标记语法标记。这些单元格的颜色深度代表相对的标记距离。一个单元格越暗，对应的标记在语法上越相似。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr3_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr3_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr3_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr3_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr3_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 3. Token Format Distance of two example HTTP messages.</p>
+<hr>
+<p><strong>实现消息字节生成属性集的算法:</strong></p>
+<p>根据给出的属性表，我们可以编写一个函数来为给定的消息字节生成属性集。以下是一个可能的实现：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">get_attributes</span><span class="p">(</span><span class="n">byte</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">byte</span> <span class="o">==</span> <span class="mh">0x0D</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;CR&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">byte</span> <span class="o">==</span> <span class="mh">0x0A</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;LF&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">byte</span> <span class="o">==</span> <span class="mh">0x09</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;HTAB&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">byte</span> <span class="o">==</span> <span class="mh">0x20</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;SP&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">byte</span> <span class="o">==</span> <span class="mh">0x22</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;DQUOTE&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x41</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x5A</span> <span class="ow">or</span> <span class="mh">0x61</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x7A</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;ALPHA&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x01</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x7F</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;CHAR&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x00</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x1F</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;CTL&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x30</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x39</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;DIGIT&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x30</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x39</span> <span class="ow">or</span> <span class="mh">0x41</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x46</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;HEXDIG&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x00</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0xFF</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;OCTET&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="mh">0x21</span> <span class="o">&lt;=</span> <span class="n">byte</span> <span class="o">&lt;=</span> <span class="mh">0x7E</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&#34;VCHAR&#34;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">attributes</span>
+
+<span class="k">def</span> <span class="nf">generate_attribute_sets</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+    <span class="n">attribute_sets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">get_attributes</span><span class="p">(</span><span class="n">byte</span><span class="p">)</span>
+        <span class="n">attribute_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">attribute_sets</span>
+</code></pre></div><p><code>get_attributes</code>函数接受一个字节值（0-255之间的整数）并返回一个与该字节关联的属性集。</p>
+<p><code>generate_attribute_sets</code>函数接受一个消息（作为字节值列表）并使用<code>get_attributes</code>函数为每个字节生成一个属性集。然后返回一个包含属性集的列表。</p>
+<p>计算任意两个字节之间的TFD：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">token_format_distance</span><span class="p">(</span><span class="n">set1</span><span class="p">,</span> <span class="n">set2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">set2</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">set2</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">calculate_tfd_matrix</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">,</span> <span class="n">message2_attribute_sets</span><span class="p">):</span>
+    <span class="n">tfd_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">message2_attribute_sets</span><span class="p">))]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">))]</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">set1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">set2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">message2_attribute_sets</span><span class="p">):</span>
+            <span class="n">tfd_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_format_distance</span><span class="p">(</span><span class="n">set1</span><span class="p">,</span> <span class="n">set2</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">tfd_matrix</span>
+
+<span class="k">def</span> <span class="nf">print_tfd_matrix</span><span class="p">(</span><span class="n">tfd_matrix</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Token Format Distance Matrix:&#34;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tfd_matrix</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">([</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span>
+
+<span class="n">message1</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x50</span><span class="p">,</span> <span class="mh">0x4F</span><span class="p">,</span> <span class="mh">0x53</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x2F</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">]</span>
+<span class="n">message2</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x47</span><span class="p">,</span> <span class="mh">0x45</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x2F</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">]</span>
+
+<span class="n">message1_attribute_sets</span> <span class="o">=</span> <span class="n">generate_attribute_sets</span><span class="p">(</span><span class="n">message1</span><span class="p">)</span>
+<span class="n">message2_attribute_sets</span> <span class="o">=</span> <span class="n">generate_attribute_sets</span><span class="p">(</span><span class="n">message2</span><span class="p">)</span>
+
+<span class="n">tfd_matrix</span> <span class="o">=</span> <span class="n">calculate_tfd_matrix</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">,</span> <span class="n">message2_attribute_sets</span><span class="p">)</span>
+<span class="n">print_tfd_matrix</span><span class="p">(</span><span class="n">tfd_matrix</span><span class="p">)</span>
+</code></pre></div><p>这个版本的代码首先使用<code>calculate_tfd_matrix</code>函数计算两个消息之间任意两个字节的TFD矩阵。然后使用<code>print_tfd_matrix</code>函数以易于阅读的格式打印TFD矩阵。</p>
+<hr>
+<h3 id="32-message-format-distance-measurement">3.2. Message format distance measurement</h3>
+<p>Sequence alignment algorithms like NW algorithm [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0037" target="_blank" rel="noopener noreffer ">37]</a> have been used in PRE to find message structure or measure sequence similarity [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>. In NW algorithm, a <a href="https://www.sciencedirect.com/topics/computer-science/greedy-strategy" target="_blank" rel="noopener noreffer ">greedy strategy</a> is applied based on the comparison of elements with 0/1 values. In this paper, we redefine the similarity of basic elements to be tokens with different syntax attributes, thus token similarity is optimized to be a variable ranged in [0, 1]. Correspondingly, taking the text similarity measurement Levenshtein Distance (LD) Algorithm i.e. edit distance [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0038" target="_blank" rel="noopener noreffer ">38]</a> widely used in NLP (Natural Language Processing) as reference, we define MFD based on TFD introduced in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">Section 3.1</a> to measure the distance of messages from the point of syntax.</p>
+<p>The basic LD algorithm is used to measure the edit distance by matching elements. Its compute process could be expressed as follows:</p>
+<blockquote>
+<p>翻译：</p>
+<p>像NW算法[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0037" target="_blank" rel="noopener noreffer ">37]</a>这样的序列比对算法已经被用于PRE中寻找消息结构或测量序列相似性[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0021" target="_blank" rel="noopener noreffer ">21]</a>，[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0022" target="_blank" rel="noopener noreffer ">22]</a>，[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0027" target="_blank" rel="noopener noreffer ">27]</a>。在NW算法中，采用了一种基于0/1值元素比较的<a href="https://www.sciencedirect.com/topics/computer-science/greedy-strategy" target="_blank" rel="noopener noreffer ">贪婪策略</a>。</p>
+<p>在本文中，我们将基本元素的相似性重新定义为具有不同语法属性的标记（tokens with different syntax attributes），因此标记相似性被优化为一个范围在[0，1]之间的变量。相应地，以广泛应用于NLP（自然语言处理）的文本相似性度量Levenshtein距离（LD）算法，即编辑距离[<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0038" target="_blank" rel="noopener noreffer ">38]</a>为参考，我们基于<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">第3.1节</a>中介绍的TFD定义MFD，以从语法角度测量消息之间的距离。</p>
+<p>基本的LD算法用于通过匹配元素来测量编辑距离。其计算过程可表示如下：</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-txt" data-lang="txt">1. For j = 0 or i = 0, d[i][0] = i; d[0][j] = j;
+2. if str1[i] == str2[j], then temp = 0, else temp = 1;
+3. d[i][j] = min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + temp)
+</code></pre></div><p>这段伪代码是实现Levenshtein距离（LD）算法的核心部分。Levenshtein距离（也称为编辑距离）是一种用于测量两个字符串之间差异的度量，<strong>通过计算将一个字符串转换为另一个字符串所需的最少单字符编辑操作（插入、删除或替换）的数量</strong>。这里的伪代码描述了计算两个字符串<code>str1</code>和<code>str2</code>之间的Levenshtein距离的动态规划方法。</p>
+<p>以下是伪代码的解释：</p>
+<ol>
+<li>初始化动态规划矩阵<code>d</code>的边界条件。当<code>i = 0</code>时，<code>d[i][0] = i</code>表示将<code>str1</code>的前<code>i</code>个字符变为空字符串需要的操作次数。同样地，当<code>j = 0</code>时，<code>d[0][j] = j</code>表示将<code>str2</code>的前<code>j</code>个字符变为空字符串需要的操作次数。</li>
+<li>对于<code>str1</code>的第<code>i</code>个字符和<code>str2</code>的第<code>j</code>个字符，如果它们相等，则<code>temp = 0</code>（不需要进行替换操作）；否则，<code>temp = 1</code>（需要进行替换操作）。</li>
+<li>计算<code>d[i][j]</code>的值，这是将<code>str1</code>的前<code>i</code>个字符转换为<code>str2</code>的前<code>j</code>个字符所需的最少操作次数。为此，我们选择以下三个值中的最小值：
+<ul>
+<li><code>d[i-1][j] + 1</code>：将<code>str1</code>的前<code>i-1</code>个字符转换为<code>str2</code>的前<code>j</code>个字符所需的操作次数，再加上1次删除操作。</li>
+<li><code>d[i][j-1] + 1</code>：将<code>str1</code>的前<code>i</code>个字符转换为<code>str2</code>的前<code>j-1</code>个字符所需的操作次数，再加上1次插入操作。</li>
+<li><code>d[i-1][j-1] + temp</code>：将<code>str1</code>的前<code>i-1</code>个字符转换为<code>str2</code>的前<code>j-1</code>个字符所需的操作次数，再加上<code>temp</code>次替换操作（如果需要）。</li>
+</ul>
+</li>
+</ol>
+<p>最后，<code>d[len(str1)][len(str2)]</code>的值即为<code>str1</code>和<code>str2</code>之间的Levenshtein距离。</p>
+<p>当然可以。假设我们需要计算两个字符串之间的Levenshtein距离，字符串<code>str1</code>为&quot;kitten&rdquo;，字符串<code>str2</code>为&quot;sitting&rdquo;。我们可以按照之前提到的伪代码来计算它们之间的距离。</p>
+<ol>
+<li>初始化动态规划矩阵<code>d</code>：</li>
+</ol>
+<pre><code>   | - | s | i | t | t | i | n | g |
+---|---|---|---|---|---|---|---|---|
+-  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+k  | 1 |   |   |   |   |   |   |   |
+i  | 2 |   |   |   |   |   |   |   |
+t  | 3 |   |   |   |   |   |   |   |
+t  | 4 |   |   |   |   |   |   |   |
+e  | 5 |   |   |   |   |   |   |   |
+n  | 6 |   |   |   |   |   |   |   |
+</code></pre><ol>
+<li>使用伪代码中提到的动态规划方法填充矩阵：</li>
+</ol>
+<pre><code>   | - | s | i | t | t | i | n | g |
+---|---|---|---|---|---|---|---|---|
+-  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+k  | 1 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+i  | 2 | 2 | 1 | 2 | 3 | 4 | 5 | 6 |
+t  | 3 | 3 | 2 | 1 | 2 | 3 | 4 | 5 |
+t  | 4 | 4 | 3 | 2 | 1 | 2 | 3 | 4 |
+e  | 5 | 5 | 4 | 3 | 2 | 3 | 4 | 5 |
+n  | 6 | 6 | 5 | 4 | 3 | 4 | 3 | 4 |
+</code></pre><ol>
+<li>矩阵右下角的值<code>d[6][7] = 4</code>表示&quot;kitten&quot;和&quot;sitting&quot;之间的Levenshtein距离为4。</li>
+</ol>
+<p>这意味着我们需要进行以下4个操作才能将&quot;kitten&quot;转换为&quot;sitting&rdquo;：</p>
+<ol>
+<li>将&quot;k&quot;替换为&quot;s&rdquo;（替换操作）</li>
+<li>将&quot;e&quot;替换为&quot;i&rdquo;（替换操作）</li>
+<li>将&quot;n&quot;替换为&quot;t&rdquo;（替换操作）</li>
+<li>在末尾添加&quot;g&rdquo;（插入操作）</li>
+</ol>
+<p>In both original LD and NW algorithm, elements are compared by matching their values, and the result is either match or not. While in work of this paper, tokens are compared to get a token distance in scope [0,1]. To apply the idea of LD or NW algorithm, we make some optimization.</p>
+<p>Firstly, values in the first row and column are kept the same, cause when one of the comparing token sequence is empty, their difference is naturally the length of the other sequence. Secondly, when fill in the other blanks in the distance matrix of tokens, we replace the matching of sequence element by TFD. As the matching result is no longer 0/1, we optimized the iteration equation to be:</p>
+<blockquote>
+<p>翻译：</p>
+<p>在原始的LD和NW算法中，元素通过匹配它们的值进行比较，结果要么匹配要么不匹配。然而，在这篇论文的工作中，标记进行比较以获得一个范围在[0,1]之间的标记距离。为了应用LD或NW算法的思想，我们进行了一些优化。</p>
+<p>首先，第一行和第一列的值保持不变，因为当比较的标记序列中的一个为空时，它们之间的差异自然是另一个序列的长度。</p>
+<p>其次，在填充标记距离矩阵的其他空格时，我们用TFD替换序列元素的匹配。由于匹配结果不再是0/1，我们将迭代方程优化为：</p>
+<div class="highlight"><pre class="chroma"><code class="language-txt" data-lang="txt">3. d[i][j] = min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + TFD(t_i, t_j))
+</code></pre></div></blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230406173407208.png"
+        data-srcset="/images/Clustering.assets/image-20230406173407208.png, /images/Clustering.assets/image-20230406173407208.png 1.5x, /images/Clustering.assets/image-20230406173407208.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230406173407208.png"
+        title="image-20230406173407208" /></p>
+<p>where $t_i$ and $t_j$ are the $i$ th and $j$ th tokens of each message token sequence.</p>
+<p>这样做的意义在于能够更精确地度量两个序列之间的差异。在原始的LD和NW算法中，元素仅通过其值进行匹配，导致结果只有匹配或不匹配两种情况。在这篇论文的改进方法中，通过计算标记之间的距离（范围在[0,1]之间），可以更精确地度量两个序列之间的相似性。这有助于在实际应用中更好地解决问题，如自然语言处理、生物信息学等领域。</p>
+<p>修改后的伪代码如下：</p>
+<pre><code>function token_based_distance(seq1, seq2):
+    n = length(seq1)
+    m = length(seq2)
+
+    # 初始化距离矩阵
+    d = create_matrix(n+1, m+1)
+
+    # 填充第一行和第一列
+    for i in range(n+1):
+        d[i][0] = i
+    for j in range(m+1):
+        d[0][j] = j
+
+    # 动态规划填充矩阵
+    for i in range(1, n+1):
+        for j in range(1, m+1):
+            # 计算标记距离
+            token_distance = TFD(seq1[i-1], seq2[j-1])
+
+            # 更新距离矩阵
+            d[i][j] = min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + token_distance)
+
+    # 返回序列之间的距离
+    return d[n][m]
+</code></pre><p>Concrete description of the measurement of MFD is shown <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0012" target="_blank" rel="noopener noreffer ">Algorithm 1</a>. For the demonstration of two HTTP messages we show in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0004" target="_blank" rel="noopener noreffer ">Section 3.1</a>, the token sequence alignment matrix could be calculated as <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0012" target="_blank" rel="noopener noreffer ">Algorithm 1</a>. And the result is shown in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0004" target="_blank" rel="noopener noreffer ">Fig. 4</a>, where the value in bottom right corner represents for the MFD of two HTTP message token sequences.</p>
+<blockquote>
+<p>翻译：</p>
+<p>MFD测量的具体描述如算法1所示。对于我们在第3.1节展示的两个HTTP消息，标记序列对齐矩阵可以按照算法1计算。结果如图4所示，其中右下角的值代表两个HTTP消息标记序列的MFD。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr12_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr12_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr12_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr12_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr12_lrg.jpg"
+        title="img" /></p>
+<p>Algorithm 1. MFD (Message Format Distance) measurement.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr4_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr4_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr4_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr4_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr4_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 4. MFD calculation of two example HTTP messages.</p>
+<p>To verify this MFD calculation algorithm, we take three samples to compute their syntax distances, and the results are shown in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0005" target="_blank" rel="noopener noreffer ">Fig. 5</a>. Obviously, messages HTTP1 and HTTP2 of same protocol have significant smaller MFD value (5.92) than those between them and message DNS (18.57 and 16.73). Systematic tests and verifications will be taken in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0007" target="_blank" rel="noopener noreffer ">Section 4</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>为了验证这个MFD计算算法，我们选取了三个样本来计算它们的语法距离，结果如图5所示。显然，相同协议的消息HTTP1和HTTP2之间的MFD值（5.92）明显小于它们与DNS消息之间的值（18.57和16.73）。系统性的测试和验证将在第4节进行。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr5_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr5_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr5_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr5_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr5_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 5. MFD in three messages.</p>
+<p>In practice, as the length of message head with protocol syntax is unknown, we usually calculate MFD on the first certain bytes of matching messages, for the sake of computational efficiency. Concrete decision of the head length will be discussed in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0006" target="_blank" rel="noopener noreffer ">Section 3.3</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在实际应用中，由于协议语法的消息头长度未知，为了计算效率，我们通常在匹配消息的前几个字节上计算MFD。关于头部长度的具体决策将在<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0006" target="_blank" rel="noopener noreffer ">第3.3节</a>中讨论。</p>
+</blockquote>
+<p>这段话描述了在实际应用中计算消息的MFD时所面临的一个挑战。由于消息头部的长度可能是未知的，因此在计算过程中不能直接使用完整的消息。为了提高计算效率，我们通常仅在匹配消息的前几个字节上计算MFD。这种方法可以降低计算复杂度，但同时需要对头部长度进行合适的选择，以便在保持计算效率的同时，获得有意义和可靠的结果。</p>
+<p>例如，在网络流量分析中，我们可能需要比较不同协议的消息，如HTTP和DNS。由于这些协议的消息头部长度可能不同，因此在计算MFD时，我们可以选择一个适当的头部长度，如前50个字节。这样，我们可以比较两个消息在这50个字节内的相似性，而不需要处理整个消息。</p>
+<p>需要注意的是，头部长度的选择可能会影响计算结果的准确性。如果选择的头部长度过短，可能无法捕捉到足够的信息来区分不同的协议。如果头部长度过长，则可能导致计算效率降低。因此，在实际应用中需要对头部长度进行权衡和选择。具体的决策过程将在文献中的第3.3节进行讨论。</p>
+<p><strong>代码实现</strong></p>
+<p>为了实现完整的计算MFD的python代码，我们可以将两段伪代码结合起来。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">###################</span>
+<span class="k">def</span> <span class="nf">token_format_distance</span><span class="p">(</span><span class="n">set1</span><span class="p">,</span> <span class="n">set2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">set2</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">set2</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">generate_attribute_sets</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">set</span><span class="p">([</span><span class="n">byte</span><span class="p">])</span> <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="n">message</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">calculate_tfd_matrix</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">,</span> <span class="n">message2_attribute_sets</span><span class="p">):</span>
+    <span class="n">tfd_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">message2_attribute_sets</span><span class="p">))]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">))]</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">set1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">message1_attribute_sets</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">set2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">message2_attribute_sets</span><span class="p">):</span>
+            <span class="n">tfd_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_format_distance</span><span class="p">(</span><span class="n">set1</span><span class="p">,</span> <span class="n">set2</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">tfd_matrix</span>
+
+<span class="k">def</span> <span class="nf">print_tfd_matrix</span><span class="p">(</span><span class="n">tfd_matrix</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Token Format Distance Matrix:&#34;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tfd_matrix</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">([</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span>
+<span class="c1">###################</span>
+        
+<span class="k">def</span> <span class="nf">token_based_distance</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq1</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
+
+    <span class="c1"># 初始化距离矩阵</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+
+    <span class="c1"># 填充第一行和第一列</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+
+    <span class="n">seq1_attribute_sets</span> <span class="o">=</span> <span class="n">generate_attribute_sets</span><span class="p">(</span><span class="n">seq1</span><span class="p">)</span>
+    <span class="n">seq2_attribute_sets</span> <span class="o">=</span> <span class="n">generate_attribute_sets</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
+    <span class="n">tfd_matrix</span> <span class="o">=</span> <span class="n">calculate_tfd_matrix</span><span class="p">(</span><span class="n">seq1_attribute_sets</span><span class="p">,</span> <span class="n">seq2_attribute_sets</span><span class="p">)</span>
+
+    <span class="c1"># 动态规划填充矩阵</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># 计算标记距离</span>
+            <span class="n">token_distance</span> <span class="o">=</span> <span class="n">tfd_matrix</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># 更新距离矩阵</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">token_distance</span><span class="p">)</span>
+
+    <span class="c1"># 返回序列之间的距离</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">m</span><span class="p">]</span>
+
+<span class="n">message1</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x50</span><span class="p">,</span> <span class="mh">0x4F</span><span class="p">,</span> <span class="mh">0x53</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x2F</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">]</span>
+<span class="n">message2</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x47</span><span class="p">,</span> <span class="mh">0x45</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x2F</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">]</span>
+
+<span class="n">distance</span> <span class="o">=</span> <span class="n">token_based_distance</span><span class="p">(</span><span class="n">message1</span><span class="p">,</span> <span class="n">message2</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;MFD between message1 and message2:&#34;</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
+</code></pre></div><p>这段代码首先实现了<code>generate_attribute_sets</code>函数，然后将两段伪代码结合在一起。</p>
+<p><code>token_based_distance</code>函数首先根据输入序列生成属性集合，并计算TFD矩阵。接下来，使用动态规划填充距离矩阵，并返回序列之间的MFD。最后，我们使用示例消息来计算和打印它们之间的MFD。</p>
+<h3 id="33-unsupervised-clustering-strategy">3.3. Unsupervised clustering strategy</h3>
+<p>The message format distance measurement MFD introduced in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0005" target="_blank" rel="noopener noreffer ">Section 3.2</a> is applied to form a message distance matrix, instead of <a href="https://www.sciencedirect.com/topics/computer-science/euclidean-distance" target="_blank" rel="noopener noreffer ">Euclidean distance</a> used in most cluster algorithms like PAM algorithm in [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0018" target="_blank" rel="noopener noreffer ">18]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0028" target="_blank" rel="noopener noreffer ">28]</a>. In terms of the distribution characteristics of unknown message format distances, we employ the density based DBSCAN algorithm [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0036" target="_blank" rel="noopener noreffer ">36]</a> to conduct the cluster step. This algorithm is once used to cluster internet traffic of public protocols [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0046" target="_blank" rel="noopener noreffer ">46]</a> by utilizing statistic feature vectors as flow similarity. While in this paper, it is used to realize the clustering of unknown protocol messages by unsupervised <a href="https://www.sciencedirect.com/topics/computer-science/machine-learning" target="_blank" rel="noopener noreffer ">machine learning</a>.</p>
+<p>Different from partition or hierarchical based cluster methods, the basic idea of DBSCAN is to find elements or regions with enough density (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0006" target="_blank" rel="noopener noreffer ">Fig. 6</a>). This algorithm has an advantage in finding clusters in any shapes, as long as the elements are <em>density connected</em>. This advantage is pretty important when we deal with cluster problem of unknown protocol messages, because the shape of clusters is uncertain (<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#fig0007" target="_blank" rel="noopener noreffer ">Fig. 7</a>) and what’s more, the elements’ distances are calculated in a high dimensional space, other than Euclidean space which is widely used in most cluster algorithms.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在第3.2节中引入的消息格式距离测量MFD被应用于形成消息距离矩阵，而不是大多数聚类算法（如[18]、[28]中的PAM算法）中使用的欧几里得距离。根据未知消息格式距离的分布特征，我们采用基于密度的DBSCAN算法[36]来进行聚类步骤。此算法曾用于通过利用统计特征向量作为流相似性来聚类公共协议的互联网流量[46]。然而在本文中，它被用于通过无监督机器学习实现未知协议消息的聚类。</p>
+<p>与分区或基于层次的聚类方法不同，DBSCAN的基本思想是找到具有足够密度的元素或区域（图6）。只要元素是密度相连，该算法在找到任何形状的聚类方面具有优势。当我们处理未知协议消息的聚类问题时，这个优势非常重要，因为聚类的形状是不确定的（图7），而且，元素的距离是在高维空间中计算的，而不是在欧几里得空间中，后者被广泛应用于大多数聚类算法。</p>
+</blockquote>
+<p><strong>DBSCAN</strong></p>
+<p>DBSCAN（Density-Based Spatial Clustering of Applications with Noise）是一种基于密度的空间聚类算法，它可以识别任意形状的聚类，同时对噪声数据具有较好的鲁棒性。<strong>DBSCAN的基本思想是将具有足够密度的区域视为一个簇，并将密度相连的区域连接在一起。</strong></p>
+<p>DBSCAN算法主要有三个核心概念：</p>
+<ol>
+<li><strong>邻域（ε-neighborhood）</strong>：对于给定数据点p，其ε-邻域包含在以p为中心且半径为ε的圆内的所有数据点。</li>
+<li><strong>核心点（Core point）</strong>：如果一个数据点的ε-邻域内至少包含MinPts个其他数据点，那么该数据点被认为是一个核心点。</li>
+<li><strong>密度相连（Density-connected）</strong>：如果存在一个点序列p1, p2, &hellip;, pn，其中每个点pi和pi+1是直接密度可达的（即它们是彼此的核心点），那么数据点p和q就是密度相连的。</li>
+</ol>
+<p>DBSCAN算法的基本步骤如下：</p>
+<ol>
+<li>选择一个未被访问的数据点，找到其ε-邻域中的所有数据点。</li>
+<li>如果该数据点的ε-邻域内包含至少MinPts个其他数据点，则创建一个新簇并将该数据点及其邻域内的所有数据点添加到该簇中。标记这些点为已访问。</li>
+<li>对于该簇中的每个数据点，找到其ε-邻域中的所有数据点。如果该点是核心点，并且其邻域中存在尚未属于任何簇的数据点，则将这些数据点添加到当前簇中，并标记为已访问。</li>
+<li>重复上述过程，直到所有数据点都被访问过。</li>
+</ol>
+<p><strong>举例说明：</strong></p>
+<p>假设我们有一组二维数据点，我们将ε设为1，MinPts设为4。在开始聚类之前，所有数据点都被标记为未访问。</p>
+<ol>
+<li>从数据点集合中随机选择一个未访问的数据点A，并找到其ε-邻域中的所有数据点。</li>
+<li>假设A的ε-邻域内有5个其他数据点，超过MinPts的要求。因此，我们创建一个新簇并将A及其邻域内的数据点添加到该簇中。标记这些点为已访问。</li>
+<li>对于簇中的每个数据点（包括A），找到其ε-邻域中的所有数据点。对于每个邻域内的核心点，如果它们尚未属于任何簇，将它们添加到当前簇中。</li>
+<li>继续执行步骤3，直到簇中所有数据点的邻域都被检查过。然后返回步骤1，直到所有数据点都被访问过。</li>
+</ol>
+<p>最终，DBSCAN将找到具有足够密度的簇，并将它们连接在一起。在这个过程中，任何不属于任何簇的数据点将被视为噪声。</p>
+<!-- raw HTML omitted -->
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr6_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr6_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr6_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr6_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr6_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 6. Basic idea of DBSCAN.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/1-s2.0-S138912862030445X-gr7_lrg.jpg"
+        data-srcset="/images/Clustering.assets/1-s2.0-S138912862030445X-gr7_lrg.jpg, /images/Clustering.assets/1-s2.0-S138912862030445X-gr7_lrg.jpg 1.5x, /images/Clustering.assets/1-s2.0-S138912862030445X-gr7_lrg.jpg 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/1-s2.0-S138912862030445X-gr7_lrg.jpg"
+        title="img" /></p>
+<p>Fig. 7. Cluster example compare. See ref. [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0047" target="_blank" rel="noopener noreffer ">47]</a>, [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0048" target="_blank" rel="noopener noreffer ">48]</a>.</p>
+<p>DBSCAN（Density-Based Spatial Clustering of Applications with Noise）和K-means是两种常用的聚类算法，它们在处理数据时有很大的不同。下面是它们之间的详细比较：</p>
+<p><strong>1. 算法原理：</strong></p>
+<ul>
+<li>DBSCAN：基于密度的聚类算法，它把密度相连的区域划分为一个簇，并能有效地处理噪声数据。核心思想是通过判断每个数据点的ε-邻域内的数据点数量来识别簇，从而找到具有足够密度的区域。</li>
+<li>K-means：基于距离的聚类算法，通过最小化簇内数据点与簇中心的距离平方和来划分簇。算法迭代过程中不断更新簇中心，直至收敛。</li>
+</ul>
+<p><strong>2. 形状与大小：</strong></p>
+<ul>
+<li>DBSCAN：能够发现任意形状的簇，不受形状限制。</li>
+<li>K-means：通常假设簇呈圆形或球形，对非凸形状的簇处理效果较差。</li>
+</ul>
+<p><strong>3. 簇的数量：</strong></p>
+<ul>
+<li>DBSCAN：不需要事先指定簇的数量，算法会自动识别出合适数量的簇。</li>
+<li>K-means：需要事先指定簇的数量K，对于不同的K值，聚类结果可能有很大差异。</li>
+</ul>
+<p><strong>4. 对噪声的敏感性：</strong></p>
+<ul>
+<li>DBSCAN：对于噪声数据具有较好的鲁棒性，可以将噪声数据点识别并排除在簇之外。</li>
+<li>K-means：对噪声数据敏感，噪声数据点可能影响簇中心的计算及最终聚类结果。</li>
+</ul>
+<p><strong>5. 收敛速度与迭代次数：</strong></p>
+<ul>
+<li>DBSCAN：时间复杂度在合适的数据结构下为O(nlogn)，其中n是数据点数量。通常具有较高的计算效率。</li>
+<li>K-means：收敛速度可能较慢，因为算法需要多次迭代以更新簇中心。时间复杂度为O(n * K * I * d)，其中n是数据点数量，K是簇数量，I是迭代次数，d是维度。</li>
+</ul>
+<p><strong>6. 参数选择：</strong></p>
+<ul>
+<li>DBSCAN：需要选择两个参数：邻域半径ε和最小数据点数MinPts。合适的参数值对算法性能有很大影响。</li>
+<li>K-means：只需指定簇的数量K。然而，选择合适的K值也可能是个挑战，可能需要尝试不同的K值并评估聚类结果。</li>
+</ul>
+<p>总之，DBSCAN和K-means在聚类任务上有各自的优缺点。DBSCAN能处理任意形状的簇且对噪声有鲁棒性，但参数选择对结果影响较大。而K-means需要预先设定簇数量，对噪声敏感，但参数较少。在实际应用中，可以根据数据特点和需求选择合适的聚类算法。</p>
+<p>当处理未知协议消息的聚类问题时，DBSCAN具有一些优势，使其成为一个更合适的选择：</p>
+<ol>
+<li><strong>不需要预先指定簇数量</strong>：在处理未知协议消息时，我们可能不知道有多少种不同的消息类型（即簇的数量）。DBSCAN不需要预先设定簇数量，它可以自动根据数据密度识别簇，这在处理未知协议消息时很有用。</li>
+<li><strong>能够处理噪声</strong>：在实际通信过程中，可能会收到一些噪声消息，这些消息与其他协议消息无关。DBSCAN能够识别并处理这些噪声数据，使得聚类结果更准确。</li>
+<li><strong>对任意形状的簇都有效</strong>：由于未知协议消息的特点，不同类型的消息可能在特征空间中呈现不同的分布形状。DBSCAN能够发现任意形状的簇，因此非常适合处理这种情况。</li>
+<li><strong>基于密度的聚类原理</strong>：DBSCAN的密度概念有助于在特征空间中自然地划分簇。这使得算法能够将具有相似特征的未知协议消息聚集在一起，从而更容易地识别出它们。</li>
+<li><strong>鲁棒性</strong>：DBSCAN对于异常值和噪声具有较好的鲁棒性。在处理未知协议消息时，这一优点有助于确保聚类结果的稳定性和准确性。</li>
+</ol>
+<p>综上所述，DBSCAN在处理未知协议消息的聚类问题时具有很大的优势。然而，需要注意的是，DBSCAN对参数选择（如邻域半径ε和最小数据点数MinPts）的敏感性。在实际应用中，可能需要尝试不同的参数组合以获得最佳聚类结果。</p>
+<hr>
+<p>In this paper, we use the MFD based on format similarity defined in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#sec0005" target="_blank" rel="noopener noreffer ">Section 3.2</a> to get the distance matrix of unknown protocol messages which are to be clustered. Then the DBSCAN algorithm is applied on this distance matrix. There are many indexes to measure the quality of a cluster result. When analyzing mixed unknown protocol messages, supervised indexes like homogeneity, completeness, <a href="https://www.sciencedirect.com/topics/computer-science/adjusted-rand-index" target="_blank" rel="noopener noreffer ">adjusted rand index</a> and so on become unavailable because of lack of standard results. Therefore, we choose two unsupervised cluster quality measure indexes, <a href="https://www.sciencedirect.com/topics/computer-science/silhouette-coefficient" target="_blank" rel="noopener noreffer ">Silhouette Coefficient</a> [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0034" target="_blank" rel="noopener noreffer ">34]</a> and Dunn Index [<a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#bib0035" target="_blank" rel="noopener noreffer ">35]</a>, to assist choosing appropriate parameters of cluster algorithm.</p>
+<p>Definition of a Silhouette Coefficient on one sample is in <a href="https://www.sciencedirect.com/science/article/pii/S138912862030445X?via%3Dihub#eq0009" target="_blank" rel="noopener noreffer ">Eq. (9)</a>.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在本文中，我们使用第3.2节中定义的基于格式相似性的MFD来获取待聚类的未知协议消息的距离矩阵。然后，将DBSCAN算法应用于此距离矩阵。有许多指标可以衡量聚类结果的质量。在分析混合未知协议消息时，由于缺乏标准结果，有监督指标如同质性、完整性、调整后的兰德指数等变得无法使用。</p>
+<p>因此，我们选择两个无监督聚类质量度量指标，轮廓系数 [34]和邓恩指数 [35]，以协助选择合适的聚类算法参数。</p>
+<p>一个样本的轮廓系数定义参见公式(9)</p>
+</blockquote>
+<!-- raw HTML omitted -->
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230406181302105.png"
+        data-srcset="/images/Clustering.assets/image-20230406181302105.png, /images/Clustering.assets/image-20230406181302105.png 1.5x, /images/Clustering.assets/image-20230406181302105.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230406181302105.png"
+        title="img" /></p>
+<p>where data point $i ∈ Ci$. $a_i$ is the mean intra-cluster distance indicating how well $i$ is assigned to its cluster with smaller $a_i$ stands for better assignment of $i$. $b_i$ is the nearest mean distance between $i$ and other clusters, and the bigger $b_i$ is, the better $i$ is separated from other clusters. The value of $s_i$ range in $[-1,1]$ . When $a_i ≪ b_i$, indicating the intra-cluster distance is much smaller than those between clusters, $s_i$ will be close to $1$, which means a better partition result of samples. On the contrary, if $s_i &lt; 0$, then $i$ is better to be clustered into some neighbouring cluster to avoid $a_i &gt; b_i$. Besides this, if $i$ is located on the border of two clusters, $s_i$ will be close to $0$.</p>
+<blockquote>
+<p>翻译：</p>
+<p>其中数据点 $i ∈ Ci$。$a_i$ 是簇内平均距离，表示数据点 $i$ 被分配到其所属簇的程度，$a_i$ 较小表示 $i$ 的分配更好。$b_i$ 是数据点 $i$ 与其他簇之间的最近平均距离，$b_i$ 越大，$i$ 与其他簇的分离程度越好。$s_i$ 的值范围在 $[-1,1]$ 之间。当 $a_i ≪ b_i$ 时，表示簇内距离远小于簇间距离，$s_i$ 将接近 $1$，这意味着样本的划分结果更好。相反，如果 $s_i &lt; 0$，则数据点 $i$ 更适合被归入某个相邻簇，以避免 $a_i &gt; b_i$。此外，如果数据点 $i$ 位于两个簇的边界上，$s_i$ 将接近 $0$。</p>
+</blockquote>
+<p>轮廓系数（Silhouette Coefficient）是一种用于评估聚类效果的无监督度量方法。它结合了内部紧密性（簇内的点距离较近）和外部分离性（簇间的点距离较远）来评价聚类结果。轮廓系数的值范围在-1到1之间，其中较高的值表示聚类效果更好。轮廓系数可用于确定最优的聚类数量或评估聚类算法的性能。</p>
+<p>轮廓系数的计算方法如下：</p>
+<ol>
+<li>
+<p>对于每个数据点 i，计算它与同一个簇内其他数据点的平均距离，记为 a(i)。这反映了簇内紧密性。</p>
+</li>
+<li>
+<p>对于每个数据点 i，计算它与其他簇中所有数据点的平均距离，找出最小的一个，记为 b(i)。这反映了簇间分离性。</p>
+</li>
+<li>
+<p>对于每个数据点 i，计算轮廓系数：</p>
+<p>$s(i) = (b(i) - a(i)) / max(a(i), b(i))$</p>
+</li>
+</ol>
+<p>对于整个数据集，所有数据点的轮廓系数的平均值称为整体轮廓系数。较高的整体轮廓系数表示聚类效果较好。</p>
+<p>举例说明：</p>
+<p>假设我们有一个数据集，包括以下6个点（用坐标表示）：</p>
+<pre><code>A1 = (1, 1)
+A2 = (1, 2)
+A3 = (2, 2)
+B1 = (5, 5)
+B2 = (6, 5)
+B3 = (6, 6)
+</code></pre><p>现在我们将这些点分为两个簇：A = {A1, A2, A3} 和 B = {B1, B2, B3}。</p>
+<p>计算轮廓系数的过程如下：</p>
+<ol>
+<li>对于簇A中的点A1，计算它与A2和A3的平均距离 a(A1) = (1 + sqrt(2)) / 2 ≈ 0.91。</li>
+<li>计算A1与簇B中的点B1、B2和B3的平均距离，然后找到最小的一个，即 b(A1) = (sqrt(32) + sqrt(41) + sqrt(50)) / 3 ≈ 5.12。</li>
+<li>计算A1的轮廓系数：s(A1) = (5.12 - 0.91) / max(5.12, 0.91) ≈ 0.82。</li>
+</ol>
+<p>以此类推，可以计算出其他点的轮廓系数，然后取平均值得到整体轮廓系数。</p>
+<p>需要注意的是，轮廓系数对于数据集中的噪声点和异常点比较敏感。因此，在实际应用中，通常需要结合其他评估指标来评价聚类效果。</p>
+<p>Then, average of $s_i$ over all samples: $𝑆𝐶(𝐶) = \frac{1}{|𝐶|}\sum_{i ∈𝐶}𝑠_i$ is defined to be one of the measure indexes of whole cluster result, Silhouette Coefficient, indicating how tightly those points are grouped into clusters. Obviously, the bigger this index is, the better those samples are grouped.</p>
+<blockquote>
+<p>翻译：</p>
+<p>然后，计算所有样本的 $s_i$ 平均值，得到整体聚类结果的度量指标之一：轮廓系数（Silhouette Coefficient），表示为 $𝑆𝐶(𝐶) = \frac{1}{|𝐶|}\sum_{i ∈𝐶}𝑠_i$ 。轮廓系数表示点群被分组到簇中的紧密程度。显然，该指标越大，样本的分组效果越好。</p>
+</blockquote>
+<p>Definition of Dunn Index is shown in Eq. (12):
+$$
+𝐷𝐼_𝑚 = \frac{\min_{1 \leq 𝑖 \leq 𝑗 \leq 𝑚} \delta(𝐶_𝑖, 𝐶_𝑗)}{\max_{1 \leq 𝑘 \leq 𝑚} \Delta_𝑘}
+\qquad (12)
+$$</p>
+<p>where $m$ is the number of clusters with $\delta(𝐶_𝑖, 𝐶_𝑗) = \min_{𝑥 ∈𝐶_𝑖,𝑦 ∈𝐶_𝑗} 𝑑(𝑥, 𝑦)$ indicating the minimum distance between-class, and $\Delta_𝑘 = \max_{𝑥,𝑦 ∈𝐶_𝑘} 𝑑(𝑥, 𝑦)$ indicating the maximum distance within class, respectively. $x$ and $y$ are elements in class $Ci$ or $Cj$, and $d(x, y)$ is the distance of these two elements. Obviously, bigger DI values support for larger separation and compactness between and within classes, which means better quality of result clusters.</p>
+<blockquote>
+<p>翻译：</p>
+<p>邓恩指数（Dunn Index）的定义如下式 (12) 所示：
+$$
+𝐷𝐼_𝑚 = \frac{\min_{1 \leq 𝑖 \leq 𝑗 \leq 𝑚} \delta(𝐶_𝑖, 𝐶_𝑗)}{\max_{1 \leq 𝑘 \leq 𝑚} \Delta_𝑘}
+\qquad (12)
+$$
+其中，$m$ 是簇的数量，$\delta(𝐶_𝑖, 𝐶_𝑗) = \min_{𝑥 ∈𝐶_𝑖,𝑦 ∈𝐶_𝑗} 𝑑(𝑥, 𝑦)$ 表示类间最小距离，而 $\Delta_𝑘 = \max_{𝑥,𝑦 ∈𝐶_𝑘} 𝑑(𝑥, 𝑦)$ 分别表示类内最大距离。$x$ 和 $y$ 是类 $C_i$ 或 $C_j$ 中的元素，$d(𝑥, 𝑦)$ 是这两个元素之间的距离。显然，较大的邓恩指数值支持类间和类内的较大分离和紧凑性，这意味着结果簇的质量更好。</p>
+</blockquote>
+<p>邓恩指数（Dunn Index, DI）是一种用于评估聚类算法性能的度量指标。它衡量了类间的分离程度和类内的紧凑性，因此可以用来评价聚类结果的质量。邓恩指数值越大，意味着聚类结果的质量越好。</p>
+<p>邓恩指数的计算方法如下：</p>
+<p>$$
+𝐷𝐼_𝑚 = \frac{\min_{1 \leq 𝑖 \leq 𝑗 \leq 𝑚} \delta(𝐶_𝑖, 𝐶_𝑗)}{\max_{1 \leq 𝑘 \leq 𝑚} \Delta_𝑘}
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$m$ 是簇的数量。</li>
+<li>$\delta(𝐶_𝑖, 𝐶_𝑗) = \min_{𝑥 ∈𝐶_𝑖,𝑦 ∈𝐶_𝑗} 𝑑(𝑥, 𝑦)$ 是类间最小距离，表示不同类之间的最近数据点之间的距离。</li>
+<li>$\Delta_𝑘 = \max_{𝑥,𝑦 ∈𝐶_𝑘} 𝑑(𝑥, 𝑦)$ 是类内最大距离，表示同一类中最远数据点之间的距离。</li>
+<li>$d(𝑥, 𝑦)$ 是数据点 $x$ 和 $y$ 之间的距离。</li>
+</ul>
+<p>邓恩指数通过计算类间最小距离与类内最大距离的比值来评估聚类结果。较大的邓恩指数值表示类间距离较大，类内距离较小，聚类效果较好。</p>
+<p>举例说明：</p>
+<p>假设有以下聚类结果，共有 3 个簇：$C_1 = {1, 2, 3}$，$C_2 = {4, 5, 6}$ 和 $C_3 = {7, 8, 9}$。以下是数据点之间的距离矩阵：</p>
+<pre><code>   1  2  3  4  5  6  7  8  9
+1  0  1  2  9 10 11 20 21 22
+2  1  0  1 10  9 10 21 20 21
+3  2  1  0 11 10  9 22 21 20
+4  9 10 11  0  1  2 13 14 15
+5 10  9 10  1  0  1 14 13 14
+6 11 10  9  2  1  0 15 14 13
+7 20 21 22 13 14 15  0  1  2
+8 21 20 21 14 13 14  1  0  1
+9 22 21 20 15 14 13  2  1  0
+</code></pre><p>计算邓恩指数：</p>
+<ol>
+<li>
+<p>类间最小距离：$C_1$ 和 $C_2$ 之间的最小距离为 9；$C_1$ 和 $C_3$ 之间的最小距离为 20；$C_2$ 和 $C_3$ 之间的最小距离为 13。因此，$\delta(𝐶_𝑖, 𝐶_𝑗) = 9$。</p>
+</li>
+<li>
+<p>类内最大距离：$C_1$ 的最大距离为 2；$C_2$ 的最大距离为 2；$C_3$ 的最大距离为 2。因此，$\Delta_𝑘 = 2$。</p>
+</li>
+<li>
+<p>邓恩指数：$𝐷I_𝑚 = \frac{\delta(𝐶_𝑖, 𝐶_𝑗)}{\Delta_𝑘} = \frac{9}{2} = 4.5$</p>
+<p>在这个例子中，邓恩指数为 4.5。邓恩指数越高，表示聚类结果的类间距离越大，类内距离越小，聚类效果越好。需要注意的是，邓恩指数在实际应用中可能受到数据集、距离度量等因素的影响，因此，最好将其与其他聚类评估指标结合使用，以获得更全面的聚类性能评价。</p>
+</li>
+</ol>
+<p>In work of this paper, we select the optimal parameters of DBSCAN with the assistance of Silhouette Coefficient and Dunn Index by picking the parameters that lead to the maximum of their mean value which we define as Eq. (13), and m stands for number of clusters.
+$$
+𝑠𝑑 = \frac{(𝑆𝐶_𝑚 + 𝐷𝐼_𝑚)}{2}
+\qquad (13)
+$$</p>
+<blockquote>
+<p>翻译：</p>
+<p>在本文的工作中，我们通过选择使它们的平均值最大化的参数来在轮廓系数和邓恩指数的辅助下选择 DBSCAN 的最佳参数，我们将其定义为式 (13)，其中 $m$ 代表簇的数量。
+$$
+𝑠𝑑 = \frac{(𝑆𝐶_𝑚 + 𝐷𝐼_𝑚)}{2}
+\qquad (13)
+$$</p>
+</blockquote>
+<p>这里提到的俩指标应该都是有现成代码的~</p>
+<p>以下是一些使用 Python 语言实现的邓恩指数和轮廓系数计算的开源库链接：</p>
+<ol>
+<li>
+<p>scikit-learn：这是一个非常流行的 Python 机器学习库，提供了大量的机器学习算法实现，包括聚类算法。在 scikit-learn 中，轮廓系数可以使用 <code>silhouette_score</code> 函数进行计算。</p>
+<p>轮廓系数文档：https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html</p>
+<p>示例代码：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">silhouette_score</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+   
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span>
+<span class="n">silhouette_avg</span> <span class="o">=</span> <span class="n">silhouette_score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;The average silhouette_score is :&#34;</span><span class="p">,</span> <span class="n">silhouette_avg</span><span class="p">)</span>
+</code></pre></div></li>
+<li>
+<p>scikit-learn-extra：这是一个扩展 scikit-learn 功能的库，提供了一些额外的聚类算法和评估指标。在 scikit-learn-extra 中，邓恩指数可以使用 <code>dunn</code> 函数进行计算。</p>
+<p>邓恩指数文档：https://scikit-learn-extra.readthedocs.io/en/latest/generated/sklearn_extra.metrics.dunn.html</p>
+<p>示例代码：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 请先安装 scikit-learn-extra: pip install scikit-learn-extra</span>
+<span class="kn">from</span> <span class="nn">sklearn_extra.metrics</span> <span class="kn">import</span> <span class="n">dunn</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+   
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span>
+<span class="n">dunn_score</span> <span class="o">=</span> <span class="n">dunn</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;The dunn score is :&#34;</span><span class="p">,</span> <span class="n">dunn_score</span><span class="p">)</span>
+</code></pre></div></li>
+</ol>
+<p>这些库提供了邓恩指数和轮廓系数的现成实现，注意，这些库可能需要安装额外的依赖包，如 NumPy 和 SciPy</p>
+<h2 id="4-experiment-and-analysis">4. Experiment and analysis</h2>
+<p>…等待更新…</p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-04-06</span>
+            </div><div class="post-info-license">
+                <span>[CC 4.0 BY-SA](https://creativecommons.org/licenses/by-nc/4.0/)</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" data-title="基于格式比较的未知协议消息聚类" data-via="@solaris_linus" data-hashtags="Protocol Reverse Engineering,Message Clustering,Machine Learning"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" data-title="基于格式比较的未知协议消息聚类"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" data-title="基于格式比较的未知协议消息聚类"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" data-title="基于格式比较的未知协议消息聚类"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/protocol-reverse-engineering/">Protocol Reverse Engineering</a>,&nbsp;<a href="/tags/message-clustering/">Message Clustering</a>,&nbsp;<a href="/tags/machine-learning/">Machine Learning</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/smart_points_in_rust/" class="prev" rel="prev" title="Rust 中的智能指针"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Rust 中的智能指针</a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.68.3">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.11"><i class="far fa-kiss-wink-heart fa-fw" aria-hidden="true"></i> LoveIt</a>
+                </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Solar1s</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/css/lightgallery-bundle.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/lightgallery.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/thumbnail/lg-thumbnail.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/zoom/lg-zoom.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/copy-tex.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{},"lightgallery":true,"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":true,"left":"\\begin{equation}","right":"\\end{equation}"},{"display":true,"left":"\\begin{equation*}","right":"\\end{equation*}"},{"display":true,"left":"\\begin{align}","right":"\\end{align}"},{"display":true,"left":"\\begin{align*}","right":"\\end{align*}"},{"display":true,"left":"\\begin{alignat}","right":"\\end{alignat}"},{"display":true,"left":"\\begin{alignat*}","right":"\\end{alignat*}"},{"display":true,"left":"\\begin{gather}","right":"\\end{gather}"},{"display":true,"left":"\\begin{CD}","right":"\\end{CD}"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

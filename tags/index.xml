@@ -3,7 +3,31 @@
         <title>Tags - Tag - Solar1s&#39; Blog</title>
         <link>http://example.org/tags/</link>
         <description>Tags - Tag - Solar1s&#39; Blog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Tue, 04 Apr 2023 10:15:03 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>Machine Learning</title>
+    <link>http://example.org/tags/machine-learning/</link>
+    <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/machine-learning/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Message Clustering</title>
+    <link>http://example.org/tags/message-clustering/</link>
+    <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/message-clustering/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Protocol Reverse Engineering</title>
+    <link>http://example.org/tags/protocol-reverse-engineering/</link>
+    <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/protocol-reverse-engineering/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Rust</title>
     <link>http://example.org/tags/rust/</link>
     <pubDate>Tue, 04 Apr 2023 10:15:03 &#43;0800</pubDate>

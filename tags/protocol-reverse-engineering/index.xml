@@ -1,0 +1,15 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Protocol Reverse Engineering - Tag - Solar1s&#39; Blog</title>
+        <link>http://example.org/tags/protocol-reverse-engineering/</link>
+        <description>Protocol Reverse Engineering - Tag - Solar1s&#39; Blog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/protocol-reverse-engineering/" rel="self" type="application/rss+xml" /><item>
+    <title>基于格式比较的未知协议消息聚类</title>
+    <link>http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/</link>
+    <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/</guid>
+    <description><![CDATA[<p>原文链接：https://doi.org/10.1016/j.comnet.2020.107296</p>]]></description>
+</item>
+</channel>
+</rss>
