@@ -28,7 +28,7 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "http:\/\/example.org\/posts\/clustering_of_unknown_protocol_messages_based_on_format_comparison\/"
-        },"genre": "posts","keywords": "Protocol Reverse Engineering, Message Clustering, Machine Learning","wordcount":  37370 ,
+        },"genre": "posts","keywords": "Protocol Reverse Engineering, Message Clustering, Machine Learning","wordcount":  43242 ,
         "url": "http:\/\/example.org\/posts\/clustering_of_unknown_protocol_messages_based_on_format_comparison\/","datePublished": "2023-04-06T19:35:34+08:00","dateModified": "2023-04-06T19:35:34+08:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -70,8 +70,8 @@
             <div class="toc-content" id="toc-content-auto"></div>
         </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于格式比较的未知协议消息聚类</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-06">2023-04-06</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;37370 words&nbsp;
-                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;75 minutes&nbsp;</div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-06">2023-04-06</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;43242 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;87 minutes&nbsp;</div>
         </div><div class="details toc" id="toc-static"  data-kept="">
                 <div class="details-summary toc-title">
                     <span>Contents</span>
@@ -97,6 +97,12 @@
       </ul>
     </li>
     <li><a href="#5-conclusion-and-future-work">5. Conclusion and future work</a></li>
+    <li><a href="#实验复现">实验复现</a>
+      <ul>
+        <li><a href="#前置知识">前置知识</a></li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
   </ul>
 </nav></div>
             </div><div class="content" id="content"><p>原文链接：https://doi.org/10.1016/j.comnet.2020.107296</p>
@@ -1610,7 +1616,363 @@ $$</p>
 <blockquote>
 <p>翻译：</p>
 <p>此外，尽管格式聚类或语法提取的处理顺序在不同的工作中有所不同，但PRE最流行和最终的目标是重建一个未知协议的完整规范。因此，问题是我们除了分析细节之外还能得到什么。在这方面，基于神经网络的无监督机器学习可能是值得尝试的。但是，构建可行的网络架构和学习目标建模的问题需要解决。Lin等人[53]在这方面是一项令人钦佩的开创性研究，它也是我们的研究方向之一[50]。</p>
-</blockquote></div><div class="post-footer" id="post-footer">
+</blockquote>
+<h2 id="实验复现">实验复现</h2>
+<p>根据作者回复的邮件“<strong>关于这篇文章的处理细节，读取协议数据包用的是scapy，聚类部分直接调用sklearn库中接口即可，辅以参数调节。序列比对部分根据文方法介绍基本可以复现的</strong>”可以得到一些实验库信息~</p>
+<h3 id="前置知识">前置知识</h3>
+<h4 id="scapy"><strong>Scapy</strong></h4>
+<p>Scapy是一个强大的Python库，用于创建、分析和操作网络数据包。它允许用户轻松地构造网络数据包、发送它们并捕获返回的数据包以进行分析。Scapy支持众多协议，可以用于网络扫描、路由跟踪、攻击检测等多种网络任务。Scapy的灵活性和可扩展性使其在网络安全和网络研究领域非常受欢迎。</p>
+<p>Scapy的主要特点：</p>
+<ul>
+<li>以交互式命令行界面提供，也可以作为库导入到Python脚本中。</li>
+<li>支持广泛的网络协议，包括IP、TCP、UDP、ICMP、ARP等。</li>
+<li>可以轻松地构造、解析和修改网络数据包。</li>
+<li>支持数据包嗅探、捕获和分析。</li>
+<li>可以实现数据包注入，用于测试网络设备、协议和安全防护措施。</li>
+</ul>
+<p>Scapy举例：</p>
+<p>以下是使用Scapy构造和发送网络数据包的简单示例。首先安装Scapy：</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ pip install scapy
+</code></pre></div><p>接下来，编写一个Python脚本，使用Scapy构造一个简单的ICMP Echo请求数据包（ping请求）并发送给目标IP地址。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># 构造IP数据包</span>
+<span class="n">ip</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s2">&#34;8.8.8.8&#34;</span><span class="p">)</span>  <span class="c1"># 目标IP地址，这里使用Google的公共DNS服务器</span>
+
+<span class="c1"># 构造ICMP Echo请求数据包</span>
+<span class="n">icmp</span> <span class="o">=</span> <span class="n">ICMP</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&#34;echo-request&#34;</span><span class="p">)</span>  <span class="c1"># &#34;echo-request&#34;表示ICMP Echo请求</span>
+
+<span class="c1"># 构造完整的数据包</span>
+<span class="n">packet</span> <span class="o">=</span> <span class="n">ip</span> <span class="o">/</span> <span class="n">icmp</span>
+
+<span class="c1"># 发送数据包并捕获响应</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">sr1</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># 分析响应</span>
+<span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">response</span><span class="p">[</span><span class="n">ICMP</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&#34;echo-reply&#34;</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Ping成功！&#34;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;收到非预期的ICMP响应。&#34;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&#34;未收到响应。&#34;</span><span class="p">)</span>
+</code></pre></div><p>上述示例中，我们首先从<code>scapy.all</code>模块导入所有功能，接着创建一个IP数据包并设置目标地址。然后，构造一个ICMP Echo请求数据包。通过将<code>ip</code>和<code>icmp</code>对象相除，我们可以轻松地将它们组合成完整的数据包。最后，使用<code>sr1()</code>函数发送数据包并捕获响应。如果收到预期的ICMP Echo应答，脚本将输出“Ping成功！”。</p>
+<p>这只是Scapy功能的一个简单示例，Scapy还可以用于执行更复杂的网络任务，如端口扫描、ARP欺骗、DNS欺骗等。</p>
+<p><strong>scapy读取协议数据包</strong></p>
+<p>以下是如何使用Scapy读取协议数据包的详细介绍和示例：</p>
+<p>首先，确保安装了Scapy库。如果还未安装，可以使用以下命令安装：</p>
+<pre><code>pip install scapy
+</code></pre><p><strong>1. 读取数据包</strong></p>
+<p>要使用Scapy读取数据包，需要使用<code>rdpcap()</code>函数。这个函数从指定的文件中读取数据包，并将它们存储在一个列表中。以下是一个示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">packets</span> <span class="o">=</span> <span class="n">rdpcap</span><span class="p">(</span><span class="s1">&#39;example.pcap&#39;</span><span class="p">)</span>
+</code></pre></div><p>在这个例子中，我们从名为<code>example.pcap</code>的文件中读取数据包，并将它们存储在<code>packets</code>列表中。</p>
+<p><strong>2. 分析数据包</strong></p>
+<p>读取数据包后，可以使用Scapy的内置函数和属性来分析它们。例如，可以使用<code>summary()</code>函数打印数据包的摘要信息：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</code></pre></div><p>这将打印出每个数据包的摘要信息，包括源地址、目的地址、协议类型等。</p>
+<p><strong>3. 获取特定协议层的数据</strong></p>
+<p>要访问数据包中特定协议层的数据，可以使用层名称作为属性。例如，以下代码提取了每个数据包中的IP层信息：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
+    <span class="n">ip_layer</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">IP</span><span class="p">]</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">ip_layer</span><span class="p">)</span>
+</code></pre></div><p>您还可以访问层中的特定字段，例如源IP地址和目的IP地址：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
+    <span class="n">src_ip</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">IP</span><span class="p">]</span><span class="o">.</span><span class="n">src</span>
+    <span class="n">dst_ip</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">IP</span><span class="p">]</span><span class="o">.</span><span class="n">dst</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Source IP:&#34;</span><span class="p">,</span> <span class="n">src_ip</span><span class="p">,</span> <span class="s2">&#34;Destination IP:&#34;</span><span class="p">,</span> <span class="n">dst_ip</span><span class="p">)</span>
+</code></pre></div><p>同样，您可以访问其他协议层的数据，如TCP、UDP等：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">TCP</span> <span class="ow">in</span> <span class="n">packet</span><span class="p">:</span>
+        <span class="n">tcp_layer</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">TCP</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">tcp_layer</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">UDP</span> <span class="ow">in</span> <span class="n">packet</span><span class="p">:</span>
+        <span class="n">udp_layer</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">UDP</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">udp_layer</span><span class="p">)</span>
+</code></pre></div><p><strong>示例：从pcap文件中提取HTTP请求</strong></p>
+<p>以下示例展示了如何从pcap文件中提取HTTP请求：</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scapy.layers.http</span> <span class="kn">import</span> <span class="n">HTTPRequest</span>
+
+<span class="n">packets</span> <span class="o">=</span> <span class="n">rdpcap</span><span class="p">(</span><span class="s2">&#34;example.pcap&#34;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">HTTPRequest</span><span class="p">):</span>
+        <span class="n">http_request</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">HTTPRequest</span><span class="p">]</span>
+        <span class="n">http_method</span> <span class="o">=</span> <span class="n">http_request</span><span class="o">.</span><span class="n">Method</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="n">http_uri</span> <span class="o">=</span> <span class="n">http_request</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="n">http_host</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">IP</span><span class="p">]</span><span class="o">.</span><span class="n">dst</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;HTTP Request: {http_method} {http_uri} to {http_host}&#34;</span><span class="p">)</span>
+</code></pre></div><p>这个示例首先从<code>example.pcap</code>读取数据包，然后检查每个数据包是否包含<code>HTTPRequest</code>层。如果是，则提取HTTP方法、请求URI和目的IP地址，并打印它们。</p>
+<p>使用Scapy确定消息的应用层协议信息并取出应用层头部的方法依赖于所分析的应用层协议。Scapy支持一些应用层协议，如HTTP、DNS等。以下是一个示例，展示了如何使用Scapy确定数据包的应用层协议信息（HTTP和DNS），并提取应用层头部。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scapy.layers.http</span> <span class="kn">import</span> <span class="n">HTTPRequest</span><span class="p">,</span> <span class="n">HTTPResponse</span>
+<span class="kn">from</span> <span class="nn">scapy.layers.dns</span> <span class="kn">import</span> <span class="n">DNS</span><span class="p">,</span> <span class="n">DNSQR</span><span class="p">,</span> <span class="n">DNSRR</span>
+
+<span class="n">packets</span> <span class="o">=</span> <span class="n">rdpcap</span><span class="p">(</span><span class="s1">&#39;example.pcap&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">packets</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">HTTPRequest</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Application Layer Protocol: HTTP (Request)&#34;</span><span class="p">)</span>
+        <span class="n">http_request</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">HTTPRequest</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;HTTP Request Header:&#34;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">http_request</span><span class="o">.</span><span class="n">show</span><span class="p">())</span>
+
+    <span class="k">elif</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">HTTPResponse</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Application Layer Protocol: HTTP (Response)&#34;</span><span class="p">)</span>
+        <span class="n">http_response</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">HTTPResponse</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;HTTP Response Header:&#34;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">http_response</span><span class="o">.</span><span class="n">show</span><span class="p">())</span>
+
+    <span class="k">elif</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">DNS</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Application Layer Protocol: DNS&#34;</span><span class="p">)</span>
+        <span class="n">dns_layer</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">DNS</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;DNS Header:&#34;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">dns_layer</span><span class="o">.</span><span class="n">show</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">DNSQR</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&#34;DNS Query:&#34;</span><span class="p">)</span>
+            <span class="n">dns_query</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">DNSQR</span><span class="p">]</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">dns_query</span><span class="o">.</span><span class="n">show</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">DNSRR</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&#34;DNS Response:&#34;</span><span class="p">)</span>
+            <span class="n">dns_response</span> <span class="o">=</span> <span class="n">packet</span><span class="p">[</span><span class="n">DNSRR</span><span class="p">]</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">dns_response</span><span class="o">.</span><span class="n">show</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Unknown or unsupported application layer protocol.&#34;</span><span class="p">)</span>
+</code></pre></div><p>在这个示例中，首先从<code>example.pcap</code>文件中读取数据包。然后，遍历每个数据包并检查它们是否包含HTTP请求、HTTP响应或DNS层。如果找到了这些层，我们就确定了应用层协议，并使用<code>show()</code>方法打印相应的头部信息。同时，Scapy并不支持所有应用层协议。</p>
+<p>对于不支持的协议，可能需要编写自定义的解析器，或者使用其他库（如<code>dpkt</code>）来解析应用层数据。在这种情况下，可以使用Scapy来提取传输层（TCP或UDP）的有效载荷，然后将有效载荷传递给相应的解析器以提取应用层头部信息。</p>
+<h4 id="sklearn---clustering">sklearn - Clustering</h4>
+<p><code>scikit-learn</code>（简称<code>sklearn</code>）是一个用于Python编程语言的机器学习库。它提供了许多用于分类、回归、聚类、降维以及模型选择和预处理的算法。<code>scikit-learn</code>具有简单易用的API，且在性能和可扩展性方面表现良好，使其成为Python机器学习领域最受欢迎的库之一。</p>
+<p>关于<code>scikit-learn</code>的信息和示例，请访问其官方网站：https://scikit-learn.org/stable/。</p>
+<hr>
+<p>无监督数据的聚类可以使用 sklearn.cluster 模块来执行。</p>
+<p>每个聚类算法都有两种变体：一种是类，实现了 <code>fit</code> 方法以在训练数据上学习聚类；另一种是函数，给定训练数据，返回一个整数标签数组，对应于不同的聚类。对于类来说，训练数据上的标签可以在 <code>labels_</code> 属性中找到。</p>
+<p><strong>输入数据</strong></p>
+<p>需要注意的一件重要事情是，该模块中实现的算法可以接受不同类型的矩阵作为输入。所有方法都接受形状为（<code>n_samples, n_features</code>）的标准数据矩阵。这些可以从 <code>sklearn.feature_extraction</code> 模块的类中获取。对于 AffinityPropagation、SpectralClustering 和 DBSCAN，还可以输入形状为（<code>n_samples, n_samples</code>）的相似性矩阵。这些可以从 <code>sklearn.metrics.pairwise</code> 模块的函数中获得。</p>
+<p><strong>Overview of clustering methods</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230408201950491.png"
+        data-srcset="/images/Clustering.assets/image-20230408201950491.png, /images/Clustering.assets/image-20230408201950491.png 1.5x, /images/Clustering.assets/image-20230408201950491.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230408201950491.png"
+        title="image-20230408201950491" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230408202024422.png"
+        data-srcset="/images/Clustering.assets/image-20230408202024422.png, /images/Clustering.assets/image-20230408202024422.png 1.5x, /images/Clustering.assets/image-20230408202024422.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230408202024422.png"
+        title="image-20230408202024422" /></p>
+<h4 id="dbscan">DBSCAN</h4>
+<p>The <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" target="_blank" rel="noopener noreffer "><code>DBSCAN</code></a> algorithm views clusters as areas of high density separated by areas of low density. Due to this rather generic view, clusters found by DBSCAN can be any shape, as opposed to k-means which assumes that clusters are convex shaped. The central component to the DBSCAN is the concept of <em>core samples</em>, which are samples that are in areas of high density. A cluster is therefore a set of core samples, each close to each other (measured by some distance measure) and a set of non-core samples that are close to a core sample (but are not themselves core samples). <strong>There are two parameters to the algorithm, <code>min_samples</code> and <code>eps</code>, which define formally what we mean when we say <em>dense</em></strong>. Higher <code>min_samples</code> or lower <code>eps</code> indicate higher density necessary to form a cluster.</p>
+<blockquote>
+<p>翻译：</p>
+<p><a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" target="_blank" rel="noopener noreffer "><code>DBSCAN</code></a> 算法将聚类视为高密度区域，这些区域由低密度区域分隔开。由于这种相当通用的观点，DBSCAN找到的聚类可以是任何形状，而不是k-means假设聚类是凸形状。DBSCAN的核心组成部分是<em>核心样本</em>的概念，它们是位于高密度区域的样本。因此，一个聚类是一组核心样本，每个样本彼此靠近（通过某种距离度量来衡量），以及一组靠近核心样本的非核心样本（但它们本身不是核心样本）。该算法有两个参数，<code>min_samples</code> 和 <code>eps</code>，它们正式定义了我们在谈论<em>密集</em>时的含义。</p>
+<p>较高的 <code>min_samples</code> 或较低的 <code>eps</code> 表示形成聚类所需的更高密度。</p>
+</blockquote>
+<p>More formally, we define a core sample as being a sample in the dataset such that there exist <code>min_samples</code> other samples within a distance of <code>eps</code>, which are defined as <em>neighbors</em> of the core sample. This tells us that the core sample is in a dense area of the vector space. A cluster is a set of core samples that can be built by recursively taking a core sample, finding all of its neighbors that are core samples, finding all of <em>their</em> neighbors that are core samples, and so on. A cluster also has a set of non-core samples, which are samples that are neighbors of a core sample in the cluster but are not themselves core samples. Intuitively, these samples are on the fringes of a cluster.</p>
+<blockquote>
+<p>翻译：</p>
+<p>更正式地说，我们将数据集中的一个核心样本定义为：存在 <code>min_samples</code> 个其他样本在 <code>eps</code> 距离内，它们被定义为核心样本的<em>邻居</em>。这告诉我们核心样本位于向量空间的密集区域。一个聚类是一组核心样本，可以通过递归地选择一个核心样本，找到所有作为核心样本的邻居，找到<em>它们</em>所有作为核心样本的邻居，依此类推来构建。一个聚类还包括一组非核心样本，这些样本是聚类中核心样本的邻居，但它们本身不是核心样本。直观地说，这些样本位于聚类的边缘。</p>
+</blockquote>
+<p>Any core sample is part of a cluster, by definition. Any sample that is not a core sample, and is at least <code>eps</code> in distance from any core sample, is considered an outlier by the algorithm.</p>
+<blockquote>
+<p>翻译：</p>
+<p>“根据定义，任何核心样本都是簇的一部分。任何非核心样本，只要与任何核心样本的距离至少为 <code>eps</code>，算法就将其视为离群点。</p>
+</blockquote>
+<p>While the parameter <code>min_samples</code> primarily controls how tolerant the algorithm is towards noise (on noisy and large data sets it may be desirable to increase this parameter), the parameter <code>eps</code> is <em>crucial to choose appropriately</em> for the data set and distance function and usually cannot be left at the default value. It controls the local neighborhood of the points. When chosen too small, most data will not be clustered at all (and labeled as <code>-1</code> for “noise”). When chosen too large, it causes close clusters to be merged into one cluster, and eventually the entire data set to be returned as a single cluster. Some heuristics for choosing this parameter have been discussed in the literature, for example based on a knee in the nearest neighbor distances plot (as discussed in the references below).</p>
+<blockquote>
+<p>翻译：</p>
+<p>尽管参数 <code>min_samples</code> 主要控制算法对噪声的容忍程度（在嘈杂和大型数据集上，可能需要增加此参数），但参数 <code>eps</code> 对于数据集和距离函数<em>至关重要</em>，通常不能保留默认值。它控制了点的局部邻域。当选择过小时，大部分数据根本不会被聚类（并被标记为 “-1” 表示“噪声”）。当选择过大时，它会导致相邻的簇合并成一个簇，最终整个数据集都被返回为一个簇。</p>
+<p>文献中已经讨论了一些选择此参数的启发式方法，例如基于最近邻距离图的膝部。</p>
+</blockquote>
+<p>In the figure below, the color indicates cluster membership, with large circles indicating core samples found by the algorithm. Smaller circles are non-core samples that are still part of a cluster. Moreover, the outliers are indicated by black points below.</p>
+<blockquote>
+<p>翻译：</p>
+<p>在下图中，颜色表示簇的成员关系，大圆圈表示算法找到的核心样本。较小的圆圈是仍然属于簇的非核心样本。此外，离群点用下方的黑色点表示。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/sphx_glr_plot_dbscan_002.png"
+        data-srcset="/images/Clustering.assets/sphx_glr_plot_dbscan_002.png, /images/Clustering.assets/sphx_glr_plot_dbscan_002.png 1.5x, /images/Clustering.assets/sphx_glr_plot_dbscan_002.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/sphx_glr_plot_dbscan_002.png"
+        title="dbscan_results" /></p>
+<p><strong>Demo of DBSCAN clustering algorithm</strong></p>
+<p>DBSCAN (Density-Based Spatial Clustering of Applications with Noise) finds core samples in regions of high density and expands clusters from them. This algorithm is good for data which contains clusters of similar density.</p>
+<p>See the <a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html#sphx-glr-auto-examples-cluster-plot-cluster-comparison-py" target="_blank" rel="noopener noreffer ">Comparing different clustering algorithms on toy datasets</a> example for a demo of different clustering algorithms on 2D datasets.</p>
+<p><strong>1. Data generation</strong></p>
+<p>We use <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_blobs.html#sklearn.datasets.make_blobs" target="_blank" rel="noopener noreffer "><code>make_blobs</code></a> to create 3 synthetic clusters.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">centers</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">labels_true</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">centers</span><span class="p">,</span> <span class="n">cluster_std</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</code></pre></div><p>这段代码的目的是生成一个包含3个簇的合成数据集，并对其进行标准化。接下来，我们将详细分析这段代码的每一部分。</p>
+<p><strong>导入必要的库：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+</code></pre></div><p><code>make_blobs</code> 函数用于生成符合高斯分布的数据集，通常用于聚类或分类算法的测试。<code>StandardScaler</code> 类用于对数据进行标准化处理。</p>
+<p><strong>定义簇中心：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">centers</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+</code></pre></div><p>这里，我们定义了3个簇中心，分别为 (1, 1)、(-1, -1) 和 (1, -1)。</p>
+<p><strong>生成数据集：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">labels_true</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">centers</span><span class="p">,</span> <span class="n">cluster_std</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+</code></pre></div><p>使用 <code>make_blobs</code> 函数生成包含750个样本的数据集。这里，<code>n_samples</code> 参数定义了数据集中样本的数量，<code>centers</code> 参数定义了簇中心的坐标，<code>cluster_std</code> 参数定义了每个簇的标准差（控制簇的紧密程度），<code>random_state</code> 参数用于设置随机数生成器的种子以确保结果的可重复性。</p>
+<p><code>make_blobs</code> 函数返回两个值：<code>X</code> 是一个包含750个样本的二维数组，<code>labels_true</code> 是一个包含每个样本所属簇的真实标签的一维数组。</p>
+<p><strong>数据标准化：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</code></pre></div><p>使用 <code>StandardScaler</code> 类对数据集进行标准化处理。标准化是将数据的均值转换为0，标准差转换为1的过程。这对于许多机器学习算法（特别是基于距离的算法）非常重要，因为它确保所有特征具有相同的尺度。<code>fit_transform</code> 方法首先计算数据集的均值和标准差，然后使用这些值将数据集转换为标准化形式。</p>
+<p>至此，我们已经成功生成了一个包含3个簇的合成数据集 <code>X</code> 并对其进行了标准化处理。</p>
+<p>We can visualize the resulting data:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230408203658826.png"
+        data-srcset="/images/Clustering.assets/image-20230408203658826.png, /images/Clustering.assets/image-20230408203658826.png 1.5x, /images/Clustering.assets/image-20230408203658826.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230408203658826.png"
+        title="image-20230408203658826" /></p>
+<p><strong>2. Compute DBSCAN</strong></p>
+<p>One can access the labels assigned by <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" target="_blank" rel="noopener noreffer "><code>DBSCAN</code></a> using the <code>labels_</code> attribute. Noisy samples are given the label math:<code>-1</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>
+
+<span class="n">db</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">labels_</span>
+
+<span class="c1"># Number of clusters in labels, ignoring noise if present.</span>
+<span class="n">n_clusters_</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">n_noise_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;Estimated number of clusters: </span><span class="si">%d</span><span class="s2">&#34;</span> <span class="o">%</span> <span class="n">n_clusters_</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;Estimated number of noise points: </span><span class="si">%d</span><span class="s2">&#34;</span> <span class="o">%</span> <span class="n">n_noise_</span><span class="p">)</span>
+</code></pre></div><pre><code>Output:
+Estimated number of clusters: 3
+Estimated number of noise points: 18
+</code></pre><p>这段代码的目的是使用DBSCAN算法对之前生成的数据集进行聚类，并输出聚类结果的统计信息。接下来，我们将详细分析这段代码的每一部分。</p>
+<p><strong>导入必要的库：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>
+</code></pre></div><p><code>numpy</code> 是一个用于处理数组和矩阵的库。<code>DBSCAN</code> 类来自 <code>sklearn.cluster</code>，用于实现DBSCAN聚类算法。<code>metrics</code> 模块包含用于评估聚类性能的指标。</p>
+<p><strong>对数据集进行DBSCAN聚类：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">db</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</code></pre></div><p>使用 <code>DBSCAN</code> 类创建一个DBSCAN聚类器的实例，设置参数 <code>eps</code> 为 0.3 和 <code>min_samples</code> 为 10。然后，使用 <code>fit</code> 方法对数据集 <code>X</code> 进行聚类。</p>
+<blockquote>
+<p><code>minpts</code>（论文中提到的最小点数）是DBSCAN算法的一个参数。在 <code>sklearn.cluster.DBSCAN</code> 类中，它对应于参数 <code>min_samples</code>。<code>minpts</code>（或 <code>min_samples</code>）用于确定在一个簇内的某个数据点周围必须有多少个邻居才能将该数据点视为核心点。换句话说，如果在一个数据点的邻域（半径为 <code>eps</code>）中有至少 <code>minpts</code> 个其他数据点，那么这个数据点就被认为是一个核心点。</p>
+<p>DBSCAN算法基于密度的概念对数据集进行聚类。在DBSCAN中，一个簇是一个密度相连的区域，与其他簇的密度相隔离。<code>minpts</code> 参数在确定一个簇的密度时起着关键作用。</p>
+<p>如果将 <code>minpts</code> 设得过小，那么可能会将噪声点误分类为核心点，导致聚类结果不稳定。相反，如果将 <code>minpts</code> 设得过大，可能会导致簇之间的界限不明确，使一些本应属于同一簇的点被分开。因此，选择合适的 <code>minpts</code> 值对于获得好的聚类结果至关重要。</p>
+</blockquote>
+<p><strong>获取聚类标签：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">labels</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">labels_</span>
+</code></pre></div><p><code>db.labels_</code> 属性包含每个样本的聚类标签。噪声点将被赋予标签 -1。</p>
+<p><strong>计算聚类数量和噪声点数量：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">n_clusters_</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">n_noise_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div><p><code>n_clusters_</code> 计算去除噪声点后的簇的数量。首先，通过创建一个标签集合并计算其长度来获取唯一标签的数量。然后，如果 <code>-1</code>（表示噪声）在标签中，从簇的数量中减去1。</p>
+<p><code>n_noise_</code> 计算标签中噪声点的数量。首先将标签转换为列表，然后使用 <code>count</code> 方法统计 <code>-1</code>（表示噪声）的出现次数。</p>
+<p><strong>输出聚类结果统计信息：</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="s2">&#34;Estimated number of clusters: </span><span class="si">%d</span><span class="s2">&#34;</span> <span class="o">%</span> <span class="n">n_clusters_</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;Estimated number of noise points: </span><span class="si">%d</span><span class="s2">&#34;</span> <span class="o">%</span> <span class="n">n_noise_</span><span class="p">)</span>
+</code></pre></div><p>打印估计的簇数量和噪声点数量。</p>
+<p>Clustering algorithms are fundamentally unsupervised learning methods. However, since <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_blobs.html#sklearn.datasets.make_blobs" target="_blank" rel="noopener noreffer "><code>make_blobs</code></a> gives access to the true labels of the synthetic clusters, it is possible to use evaluation metrics that leverage this “supervised” ground truth information to quantify the quality of the resulting clusters.</p>
+<blockquote>
+<p>翻译：</p>
+<p>聚类算法基本上是无监督学习方法。然而，由于 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_blobs.html#sklearn.datasets.make_blobs" target="_blank" rel="noopener noreffer "><code>make_blobs</code></a> 提供了对合成簇真实标签的访问，因此可以使用利用这种“监督”基准信息的评估指标来量化生成簇的质量。</p>
+</blockquote>
+<p>Examples of such metrics are the homogeneity, completeness, V-measure, Rand-Index, Adjusted Rand-Index and Adjusted Mutual Information (AMI).If the ground truth labels are not known, evaluation can only be performed using the model results itself. In that case, the Silhouette Coefficient comes in handy.</p>
+<blockquote>
+<p>翻译：</p>
+<p>这些指标的例子有同质性、完整性、V-度量、Rand-Index、调整后的 Rand-Index 和调整后的互信息（AMI）。如果不知道真实标签，评估只能使用模型本身的结果来进行。在这种情况下，轮廓系数非常有用。</p>
+</blockquote>
+<p>For more information, see the <a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_adjusted_for_chance_measures.html#sphx-glr-auto-examples-cluster-plot-adjusted-for-chance-measures-py" target="_blank" rel="noopener noreffer ">Adjustment for chance in clustering performance evaluation</a> example or the <a href="https://scikit-learn.org/stable/modules/clustering.html#clustering-evaluation" target="_blank" rel="noopener noreffer ">Clustering performance evaluation</a> module.</p>
+<p>更多信息，请参见 <a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_adjusted_for_chance_measures.html#sphx-glr-auto-examples-cluster-plot-adjusted-for-chance-measures-py" target="_blank" rel="noopener noreffer ">聚类性能评估中的机会调整</a> 示例或 <a href="https://scikit-learn.org/stable/modules/clustering.html#clustering-evaluation" target="_blank" rel="noopener noreffer ">聚类性能评估</a> 模块。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;Homogeneity: {metrics.homogeneity_score(labels_true, labels):.3f}&#34;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;Completeness: {metrics.completeness_score(labels_true, labels):.3f}&#34;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;V-measure: {metrics.v_measure_score(labels_true, labels):.3f}&#34;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;Adjusted Rand Index: {metrics.adjusted_rand_score(labels_true, labels):.3f}&#34;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span>
+    <span class="s2">&#34;Adjusted Mutual Information:&#34;</span>
+    <span class="n">f</span><span class="s2">&#34; {metrics.adjusted_mutual_info_score(labels_true, labels):.3f}&#34;</span>
+<span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;Silhouette Coefficient: {metrics.silhouette_score(X, labels):.3f}&#34;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-txt" data-lang="txt">Output:
+Homogeneity: 0.953
+Completeness: 0.883
+V-measure: 0.917
+Adjusted Rand Index: 0.952
+Adjusted Mutual Information: 0.916
+Silhouette Coefficient: 0.626
+</code></pre></div><p><strong>Plot results</strong></p>
+<p>Core samples (large dots) and non-core samples (small dots) are color-coded according to the asigned cluster. Samples tagged as noise are represented in black.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">unique_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">core_samples_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">core_samples_mask</span><span class="p">[</span><span class="n">db</span><span class="o">.</span><span class="n">core_sample_indices_</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Spectral</span><span class="p">(</span><span class="n">each</span><span class="p">)</span> <span class="k">for</span> <span class="n">each</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">))]</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Black used for noise.</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">class_member_mask</span> <span class="o">=</span> <span class="n">labels</span> <span class="o">==</span> <span class="n">k</span>
+
+    <span class="n">xy</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">class_member_mask</span> <span class="o">&amp;</span> <span class="n">core_samples_mask</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="s2">&#34;o&#34;</span><span class="p">,</span>
+        <span class="n">markerfacecolor</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">col</span><span class="p">),</span>
+        <span class="n">markeredgecolor</span><span class="o">=</span><span class="s2">&#34;k&#34;</span><span class="p">,</span>
+        <span class="n">markersize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">xy</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">class_member_mask</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">core_samples_mask</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="s2">&#34;o&#34;</span><span class="p">,</span>
+        <span class="n">markerfacecolor</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">col</span><span class="p">),</span>
+        <span class="n">markeredgecolor</span><span class="o">=</span><span class="s2">&#34;k&#34;</span><span class="p">,</span>
+        <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;Estimated number of clusters: {n_clusters_}&#34;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="/images/Clustering.assets/image-20230408205824784.png"
+        data-srcset="/images/Clustering.assets/image-20230408205824784.png, /images/Clustering.assets/image-20230408205824784.png 1.5x, /images/Clustering.assets/image-20230408205824784.png 2x"
+        data-sizes="auto"
+        alt="/images/Clustering.assets/image-20230408205824784.png"
+        title="image-20230408205824784" /></p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li><a href="https://scikit-learn.org/stable/modules/clustering.html#clustering">https://scikit-learn.org/stable/modules/clustering.html#clustering</a></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html#sphx-glr-auto-examples-cluster-plot-dbscan-py" target="_blank" rel="noopener noreffer ">Demo of DBSCAN clustering algorithm — scikit-learn 1.2.2 documentation</a></li>
+</ol></div><div class="post-footer" id="post-footer">
     <div class="post-info">
         <div class="post-info-line">
             <div class="post-info-mod">
