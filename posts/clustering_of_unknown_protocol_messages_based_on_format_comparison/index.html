@@ -17,7 +17,7 @@
 <meta name="twitter:title" content="基于格式比较的未知协议消息聚类"/>
 <meta name="twitter:description" content="论文链接：https://doi.org/10.1016/j.comnet.2020.107296"/>
 <meta name="application-name" content="Solar1s&#39; Personal Blog">
-<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" /><link rel="prev" href="http://example.org/posts/smart_points_in_rust/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" /><link rel="prev" href="http://example.org/posts/smart_points_in_rust/" /><link rel="next" href="http://example.org/posts/ownership_in_rust/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
     {
@@ -28,7 +28,7 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "http:\/\/example.org\/posts\/clustering_of_unknown_protocol_messages_based_on_format_comparison\/"
-        },"genre": "posts","keywords": "Protocol Reverse Engineering, Message Clustering, Machine Learning","wordcount":  43242 ,
+        },"genre": "posts","keywords": "Protocol Reverse Engineering, Message Clustering, Machine Learning","wordcount":  43243 ,
         "url": "http:\/\/example.org\/posts\/clustering_of_unknown_protocol_messages_based_on_format_comparison\/","datePublished": "2023-04-06T19:35:34+08:00","dateModified": "2023-04-06T19:35:34+08:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -70,7 +70,7 @@
             <div class="toc-content" id="toc-content-auto"></div>
         </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于格式比较的未知协议消息聚类</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-06">2023-04-06</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;43242 words&nbsp;
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-06">2023-04-06</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;43243 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;87 minutes&nbsp;</div>
         </div><div class="details toc" id="toc-static"  data-kept="">
                 <div class="details-summary toc-title">
@@ -1454,10 +1454,13 @@ $$</p>
 <blockquote>
 <p>翻译：</p>
 <p>图8a展示了基于消息头部长度范围为[4, 40]、步长为4计算的MFD矩阵上的聚类性能（ $v-measure$ ），其中 $minpts=3$ 和 $eps ∈ [0, 20]$。当 <em>$headlength$</em> 过短，如4、8或12时，聚类结果容易得到较不理想的结果或将 <em>$eps$</em> 限制在较窄的区间内，这增加了寻找最优聚类参数的难度。当 <em>$headlength$</em> ≥ 20时，性能曲线保持同源变化。</p>
-<p>对于未知协议的消息，我们假设它们的头部长度分布与现有消息相似。因此，我们认为公式(19)中的参数 <em>$headlength$</em> 为20，以保证适当的 <em>$eps$</em> 搜索范围，并将该方法的成本限制在可接受的范围内。需要注意的是，这里的 <em>$headlength$</em> 用于限制我们比较语法相似性的令牌序列长度，而不是每个消息的实际消息头长度。
-$$
+<p>对于未知协议的消息，我们假设它们的头部长度分布与现有消息相似。因此，我们认为公式(19)中的参数 <em>$headlength$</em> 为20，以保证适当的 <em>$eps$</em> 搜索范围，并将该方法的成本限制在可接受的范围内。需要注意的是，这里的 <em>$headlength$</em> 用于限制我们比较语法相似性的令牌序列长度，而不是每个消息的实际消息头长度。</p>
+</blockquote>
+<blockquote>
+<p>$$
 𝑜𝑝𝑡 ( 𝐶) = arg\ max_{ℎ𝑒𝑎𝑑𝑙𝑒𝑛𝑔𝑡ℎ,𝑒𝑝𝑠,𝑚𝑖𝑛𝑝𝑡𝑠}𝑠𝑑
-\<br>
+$$
+$$
 headlength = 20
 $$</p>
 </blockquote>
@@ -1995,7 +1998,8 @@ Silhouette Coefficient: 0.626
         </section>
     </div>
 
-    <div class="post-nav"><a href="/posts/smart_points_in_rust/" class="prev" rel="prev" title="Rust 中的智能指针"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Rust 中的智能指针</a></div>
+    <div class="post-nav"><a href="/posts/smart_points_in_rust/" class="prev" rel="prev" title="Rust 中的智能指针"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Rust 中的智能指针</a>
+            <a href="/posts/ownership_in_rust/" class="next" rel="next" title="Rust 所有权机制">Rust 所有权机制<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
 </div>
 <div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
                 Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.

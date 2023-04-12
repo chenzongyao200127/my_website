@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Rust 所有权机制 - Solar1s&#39; Blog</title><meta name="Description" content="Rust 的所有权（Ownership）机制是该语言核心特性之一，它为内存安全提供了保障，同时避免了垃圾回收器的使用。所有权系统基于三个原则：所有权规则、借用和生命周期，持续更新ing"><meta property="og:title" content="Rust 所有权机制" />
+<meta property="og:description" content="Rust 的所有权（Ownership）机制是该语言核心特性之一，它为内存安全提供了保障，同时避免了垃圾回收器的使用。所有权系统基于三个原则：所有权规则、借用和生命周期，持续更新ing" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/posts/ownership_in_rust/" />
+<meta property="og:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+<meta property="article:published_time" content="2023-04-12T18:02:41+08:00" />
+<meta property="article:modified_time" content="2023-04-12T18:02:41+08:00" /><meta property="og:site_name" content="Solar1s&#39; Personal Blog" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+
+<meta name="twitter:title" content="Rust 所有权机制"/>
+<meta name="twitter:description" content="Rust 的所有权（Ownership）机制是该语言核心特性之一，它为内存安全提供了保障，同时避免了垃圾回收器的使用。所有权系统基于三个原则：所有权规则、借用和生命周期，持续更新ing"/>
+<meta name="application-name" content="Solar1s&#39; Personal Blog">
+<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/ownership_in_rust/" /><link rel="prev" href="http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Rust 所有权机制",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/posts\/ownership_in_rust\/"
+        },"genre": "posts","keywords": "Rust","wordcount":  5678 ,
+        "url": "http:\/\/example.org\/posts\/ownership_in_rust\/","datePublished": "2023-04-12T18:02:41+08:00","dateModified": "2023-04-12T18:02:41+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Solar1s"
+            },"description": "Rust 的所有权（Ownership）机制是该语言核心特性之一，它为内存安全提供了保障，同时避免了垃圾回收器的使用。所有权系统基于三个原则：所有权规则、借用和生命周期，持续更新ing"
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><a class="menu-item" href="/about/"> 关于 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Solar1s&#39; Blog">Life is not a rat race.</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a class="menu-item" href="/about/" title="">关于</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Rust 所有权机制</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/programming-languages/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Programming Languages</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-04-12">2023-04-12</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;5678 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;12 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#所有权规则">所有权规则</a></li>
+        <li><a href="#使用方式">使用方式</a></li>
+        <li><a href="#借用与引用">借用与引用</a></li>
+        <li><a href="#生命周期">生命周期</a></li>
+        <li><a href="#切片">切片</a></li>
+        <li><a href="#模式匹配">模式匹配</a></li>
+      </ul>
+    </li>
+    <li><a href="#常见问题">常见问题</a>
+      <ul>
+        <li><a href="#我怎样才能实现一个包含环的图或其他数据结构"><strong>我怎样才能实现一个包含环的图或其他数据结构？</strong></a></li>
+        <li><a href="#我怎样才能定义一个包含对其自身字段之一的引用的结构">我怎样才能定义一个包含对其自身字段之一的引用的结构？</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>Rust 🦀 的所有权（Ownership）机制是该语言核心特性之一，它为内存安全提供了保障，同时避免了垃圾回收器的使用。所有权系统基于三个原则：所有权规则、借用和生命周期，持续更新ing</p>
+<h3 id="所有权规则">所有权规则</h3>
+<p>所有权系统包括以下三个规则：</p>
+<ol>
+<li>每个值在 Rust 中都有一个称为所有者（owner）的变量。</li>
+<li>同一时间内，一个值只能有一个所有者。</li>
+<li>当所有者离开作用域时，值将被销毁。</li>
+</ol>
+<p>这些规则确保了 Rust 程序的内存安全性和正确性。</p>
+<h3 id="使用方式">使用方式</h3>
+<p>以下是 Rust 所有权机制的一些基本使用方式：</p>
+<ol>
+<li>
+<p><strong>变量的赋值与移动</strong>：当将一个变量赋值给另一个变量时，Rust 默认执行的是移动（move）操作。这意味着原变量不再可用，所有权被移交给新变量。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s1</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="c1">// 此时 s1 不再可用，因为所有权已经转移给 s2。
+</span><span class="c1"></span><span class="err">```</span><span class="w">
+</span></code></pre></div></li>
+<li>
+<p><strong>函数传参与返回值</strong>：将值传递给函数时，所有权也会发生转移。类似地，从函数返回值时，所有权也会移交给调用者。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">take_ownership</span><span class="p">(</span><span class="n">s</span>: <span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">   
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="n">take_ownership</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="c1">// 此时 s1 不再可用，因为所有权已经转移给函数 take_ownership。
+</span><span class="c1"></span><span class="err">```</span><span class="w">
+</span></code></pre></div></li>
+</ol>
+<h3 id="借用与引用">借用与引用</h3>
+<p>为了能够在不转移所有权的情况下使用值，Rust 提供了借用（borrowing）机制。借用允许你创建一个指向值的引用（reference），而不需要获取值的所有权。引用分为两种类型：不可变引用与可变引用。</p>
+<ol>
+<li>
+<p><strong>不可变引用</strong>：允许你在不修改值的情况下访问它。可以创建多个不可变引用，但它们不能与可变引用共存。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">calculate_length</span><span class="p">(</span><span class="n">s</span>: <span class="kp">&amp;</span><span class="nb">String</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">usize</span> <span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">s</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">   
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculate_length</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s1</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="c1">// 此时 s1 仍然可用，因为我们只是借用了它的引用。
+</span><span class="c1"></span><span class="err">```</span><span class="w">
+</span></code></pre></div></li>
+<li>
+<p><strong>可变引用</strong>：允许你在访问值的同时修改它。在同一作用域中，一个值只能有一个可变引用，以防止数据竞争。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">append_world</span><span class="p">(</span><span class="n">s</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">s</span><span class="p">.</span><span class="n">push_str</span><span class="p">(</span><span class="s">&#34;, world&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">   
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="n">append_world</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">s1</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="c1">// 此时 s1 的值已经被修改，但所有权仍在我们手中。
+</span><span class="c1"></span><span class="err">```</span><span class="w">
+</span></code></pre></div></li>
+</ol>
+<h3 id="生命周期">生命周期</h3>
+<p>生命周期（<code>lifetime</code>）是 Rust 用于确保引用在其整个使用期间始终有效的机制。生命周期在函数签名中通过尖括号内的标识符表示，比如：<code>&lt;'a&gt;</code>。这些标识符用于指定引用的最长生命周期。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">longest</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">(</span><span class="n">s1</span>: <span class="kp">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="kt">str</span><span class="p">,</span><span class="w"> </span><span class="n">s2</span>: <span class="kp">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="kt">str</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kp">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="kt">str</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">s1</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">s2</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">s1</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">s2</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个例子中，函数 <code>longest</code> 接受两个字符串切片的引用，并返回一个具有相同生命周期 <code>'a</code> 的引用。这确保了返回的引用在其使用期间始终有效。</p>
+<p>总之，Rust 的所有权机制通过所有权规则、借用和生命周期来确保内存安全，避免了需要显式内存管理或垃圾回收器。这有助于避免常见的内存管理错误，如悬垂指针、内存泄漏和数据竞争。</p>
+<h3 id="切片">切片</h3>
+<p>切片（<code>slice</code>）是 Rust 中的一种数据类型，它允许你引用某个数据结构的一部分，而不是整个数据结构。切片通常用来处理字符串或数组。例如，你可以使用字符串切片来引用字符串的一部分：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;hello, world&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">..</span><span class="mi">5</span><span class="p">];</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">s</span><span class="p">[</span><span class="mi">7</span><span class="p">..</span><span class="mi">12</span><span class="p">];</span><span class="w">
+</span></code></pre></div><p>这里，我们使用了范围语法（<code>start..end</code>）创建了两个字符串切片，分别引用 <code>s</code> 中的 &ldquo;hello&rdquo; 和 &ldquo;world&rdquo;。注意，切片的范围是左闭右开，也就是说 <code>0..5</code> 表示索引 0 到 4 的字符。</p>
+<p>切片也可以用于数组：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">];</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">sub_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">..</span><span class="mi">4</span><span class="p">];</span><span class="w">
+</span></code></pre></div><p>在这个例子中，我们创建了一个整数数组 <code>a</code>，然后创建了一个切片 <code>sub_a</code>，它引用了数组 <code>a</code> 中的第 2 个到第 4 个元素。</p>
+<h3 id="模式匹配">模式匹配</h3>
+<p>模式匹配（<code>pattern matching</code>）是 Rust 中的一种强大功能，它允许你对复杂的数据结构进行解构和检查。模式匹配最常用的结构之一是 <code>match</code> 表达式。<code>match</code> 表达式类似于其他语言中的 <code>switch</code> 语句，但更加强大和灵活。</p>
+<p>例如，考虑一个简单的枚举类型 <code>Color</code>：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">enum</span> <span class="nc">Color</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">Red</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">Green</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">Blue</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>我们可以使用 <code>match</code> 表达式来检查 <code>Color</code> 变量的值：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">describe_color</span><span class="p">(</span><span class="n">c</span>: <span class="nc">Color</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kp">&amp;</span><span class="nb">&#39;static</span><span class="w"> </span><span class="kt">str</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Color</span>::<span class="n">Red</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&#34;red&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">Color</span>::<span class="n">Green</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&#34;green&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">Color</span>::<span class="n">Blue</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&#34;blue&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span>::<span class="n">Green</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;The color is {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">describe_color</span><span class="p">(</span><span class="n">c</span><span class="p">));</span><span class="w">
+</span></code></pre></div><p>在这个例子中，<code>describe_color</code> 函数接受一个 <code>Color</code> 枚举值，并使用 <code>match</code> 表达式根据输入的颜色返回对应的字符串描述。</p>
+<p>模式匹配还可以用于解构复杂的数据结构，例如结构体和元组。例如，下面是一个计算二维点距离原点的例子：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">struct</span> <span class="nc">Point</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">x</span>: <span class="kt">f64</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">y</span>: <span class="kt">f64</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">distance_from_origin</span><span class="p">(</span><span class="n">p</span>: <span class="nc">Point</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Point</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">y</span><span class="p">).</span><span class="n">sqrt</span><span class="p">(),</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Point</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="n">y</span>: <span class="mf">4.0</span><span class="w"> </span><span class="p">};</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;The distance is {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">distance_from_origin</span><span class="p">(</span><span class="n">p</span><span class="p">));</span><span class="w">
+</span></code></pre></div><p>在这个例子中，我们使用 <code>match</code> 表达式解构了 <code>Point</code> 结构体，并从中提取了 <code>x</code> 和 <code>y</code> 字段。然后，我们使用勾股定理计算点到原点的距离。</p>
+<p>Rust 的所有权机制、切片、模式匹配等特性使得其功能强大且安全。这些特性共同为内存管理、错误处理和代码复用提供了高效、安全的解决方案。</p>
+<h2 id="常见问题">常见问题</h2>
+<h3 id="我怎样才能实现一个包含环的图或其他数据结构"><strong>我怎样才能实现一个包含环的图或其他数据结构？</strong></h3>
+<p>至少有四种选择（在 <a href="https://rust-unofficial.github.io/too-many-lists/" target="_blank" rel="noopener noreffer ">Too Many Linked Lists</a> 中详细讨论过）。</p>
+<p><strong>1. 你可以使用 <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html" target="_blank" rel="noopener noreffer "><code>Rc</code></a>和 <a href="https://doc.rust-lang.org/std/rc/struct.Weak.html" target="_blank" rel="noopener noreffer "><code>Weak</code></a>实现它，以允许节点的共享所有权。尽管这种方法需要付出内存管理的代价。</strong></p>
+<p>在 Rust 中，<code>Rc</code>（引用计数）和 <code>Weak</code> 可以用来创建包含环的图结构。<code>Rc</code> 允许多个所有者共享同一个不可变的值，而 <code>Weak</code> 是对 <code>Rc</code> 的弱引用，这意味着它不会增加引用计数。当需要创建环形引用时，<code>Weak</code> 引用可以防止出现循环引用。</p>
+<p>下面是一个简单的例子，用 <code>Rc</code> 和 <code>Weak</code> 实现一个包含环的有向图：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">rc</span>::<span class="p">{</span><span class="n">Rc</span><span class="p">,</span><span class="w"> </span><span class="n">Weak</span><span class="p">};</span><span class="w">
+</span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">cell</span>::<span class="n">RefCell</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Node</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">value</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">children</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">parent</span>: <span class="nc">RefCell</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Weak</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;&gt;&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">Node</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">value</span>: <span class="kt">i32</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Self</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">RefCell</span>::<span class="n">new</span><span class="p">(</span><span class="n">Node</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">value</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">children</span>: <span class="nc">vec</span><span class="o">!</span><span class="p">[],</span><span class="w">
+</span><span class="w">            </span><span class="n">parent</span>: <span class="nc">RefCell</span>::<span class="n">new</span><span class="p">(</span><span class="nb">None</span><span class="p">),</span><span class="w">
+</span><span class="w">        </span><span class="p">}))</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">add_child</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">child</span>: <span class="nc">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">child</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">().</span><span class="n">parent</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">Rc</span>::<span class="n">downgrade</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)));</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">children</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">child</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Node</span>::<span class="n">new</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Node</span>::<span class="n">new</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Node</span>::<span class="n">new</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">().</span><span class="n">add_child</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">clone</span><span class="p">());</span><span class="w">
+</span><span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">().</span><span class="n">add_child</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">clone</span><span class="p">());</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="n">b</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">().</span><span class="n">add_child</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">clone</span><span class="p">());</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c1">// The graph structure:
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// a -&gt; b -&gt; c
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// |         ^
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// +---------+
+</span><span class="c1"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个例子中，我们定义了一个 <code>Node</code> 结构体，它表示图中的一个节点。节点包含一个整数值、一个子节点列表和一个指向父节点的 <code>Weak</code> 引用。我们使用 <code>RefCell</code> 对 <code>parent</code> 和 <code>children</code> 字段进行内部可变性，因为在程序运行过程中，我们可能需要改变这些字段的值。</p>
+<p><code>Node</code> 结构体实现了两个方法：<code>new</code> 和 <code>add_child</code>。<code>new</code> 方法用于创建一个新节点，而 <code>add_child</code> 方法用于将一个子节点添加到当前节点。</p>
+<p>在 <code>main</code> 函数中，我们创建了三个节点：<code>a</code>、<code>b</code> 和 <code>c</code>，并将它们连接成一个图结构。首先，我们将 <code>b</code> 和 <code>c</code> 添加为 <code>a</code> 的子节点，然后将 <code>c</code> 添加为 <code>b</code> 的子节点。这样，我们就创建了一个包含环的有向图：</p>
+<pre><code>a -&gt; b -&gt; c
+|         ^
++---------+
+</code></pre><p>使用 <code>Rc</code> 和 <code>Weak</code> 的关键在于 <code>Node</code> 结构体的 <code>parent</code> 字段。<code>parent</code> 字段是一个 <code>Weak&lt;RefCell&lt;Node&gt;&gt;</code> 类型，这意味着它是一个弱引用，不会增加引用计数。这样，在创建环时，我们就不会产生循环引用，从而避免了内存泄漏。</p>
+<p>注意：在这个例子中，我们使用了 <code>RefCell</code> 来实现内部可变性。<code>RefCell</code> 是 Rust 中的一种运行时借用检查机制，它允许在运行时检查可变引用的唯一性。</p>
+<p>当需要在多个不可变引用之间共享可变状态时，<code>RefCell</code> 是一个很好的选择。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="n">child</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">().</span><span class="n">parent</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">Rc</span>::<span class="n">downgrade</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)));</span><span class="w">
+</span></code></pre></div><p>这行代码执行了以下操作：</p>
+<ol>
+<li>
+<p><code>child.borrow_mut()</code>: 使用 <code>RefCell</code> 的 <code>borrow_mut</code> 方法获得 <code>child</code> 的一个可变引用。这允许我们修改 <code>child</code> 的内部状态。</p>
+</li>
+<li>
+<p><code>parent.replace(Some(Rc::downgrade(&amp;self)))</code>: 使用 <code>RefCell</code> 的 <code>replace</code> 方法替换 <code>child</code> 的 <code>parent</code> 字段的值。</p>
+<p><code>replace</code> 方法将原先的值（可能是 <code>None</code>）替换为传入的新值，并返回被替换的旧值。新值是 <code>Some(Rc::downgrade(&amp;self))</code>。</p>
+<p><code>Rc::downgrade</code> 函数将 <code>&amp;self</code>（当前节点的 <code>Rc&lt;RefCell&lt;Node&gt;&gt;</code> 引用）转换为一个 <code>Weak&lt;RefCell&lt;Node&gt;&gt;</code> 弱引用。这样一来，<code>child</code> 的 <code>parent</code> 字段就指向了当前节点，但它不会增加当前节点的引用计数。这可以防止循环引用和内存泄漏。</p>
+</li>
+</ol>
+<p>总结一下，这行代码的目的是将当前节点（<code>self</code>）设置为 <code>child</code> 节点的父节点，同时避免产生循环引用。</p>
+<p><strong>2. 你可以使用 “不安全（<code>unsafe</code>）” 的代码实现它，使用原始指针。这将更加高效，但却绕过了 Rust 的安全保证。</strong></p>
+<p>在 Rust 中，<code>unsafe</code> 关键字允许你绕过编译器的一些安全检查。</p>
+<p>尽管在大多数情况下，我们应该避免使用 <code>unsafe</code>，但在某些特殊情况下，如高性能场景或与其他不安全代码库交互时，使用 <code>unsafe</code> 可能是必要的。</p>
+<p>下面是一个使用 <code>unsafe</code> 实现的包含环的图结构示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">ptr</span>::<span class="n">NonNull</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Node</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">value</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">children</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">NonNull</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">parent</span>: <span class="nb">Option</span><span class="o">&lt;</span><span class="n">NonNull</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">Node</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">value</span>: <span class="kt">i32</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Box</span><span class="o">&lt;</span><span class="n">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">Node</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">value</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">children</span>: <span class="nc">vec</span><span class="o">!</span><span class="p">[],</span><span class="w">
+</span><span class="w">            </span><span class="n">parent</span>: <span class="nb">None</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="p">})</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">unsafe</span><span class="w"> </span><span class="k">fn</span> <span class="nf">add_child</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">child</span>: <span class="nb">Box</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">child</span><span class="p">.</span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">NonNull</span>::<span class="n">new_unchecked</span><span class="p">(</span><span class="bp">self</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="n">_</span><span class="p">));</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">children</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">NonNull</span>::<span class="n">new_unchecked</span><span class="p">(</span><span class="nb">Box</span>::<span class="n">leak</span><span class="p">(</span><span class="n">child</span><span class="p">)));</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Node</span>::<span class="n">new</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Node</span>::<span class="n">new</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Node</span>::<span class="n">new</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">a</span><span class="p">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">b</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="n">a</span><span class="p">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">clone</span><span class="p">());</span><span class="w">
+</span><span class="w">        </span><span class="n">b</span><span class="p">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">c</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c1">// The graph structure:
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// a -&gt; b -&gt; c
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// |         ^
+</span><span class="c1"></span><span class="w">    </span><span class="c1">// +---------+
+</span><span class="c1"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个例子中，我们定义了一个 <code>Node</code> 结构体，它表示图中的一个节点。节点包含一个整数值、一个子节点列表和一个指向父节点的可选指针。我们使用 <code>NonNull</code> 类型来表示非空裸指针。<code>NonNull</code> 是一个 <code>std::ptr::NonNull</code> 类型，它表示一个非空的裸指针，但它仍然是不安全的。</p>
+<p><code>Node</code> 结构体实现了两个方法：<code>new</code> 和 <code>add_child</code>。<code>new</code> 方法用于创建一个新节点，而 <code>add_child</code> 方法用于将一个子节点添加到当前节点。注意，我们将 <code>add_child</code> 方法标记为 <code>unsafe</code>，因为它涉及到裸指针的操作。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w">
+</span><span class="w"></span><span class="k">where</span><span class="w">
+</span><span class="w">    </span><span class="n">T</span>: <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">{</span><span class="w"> </span><span class="cm">/* private fields */</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p><code>std::ptr::NonNull</code> 是 Rust 标准库中的一个类型，表示一个非空的裸指针。<code>NonNull&lt;T&gt;</code> 是一个简单的非空指针包装器，其中 <code>T</code> 是指针所指向的类型。</p>
+<p>它的主要用途是在表示所有权关系时表明某个指针一定不为 <code>null</code>。这对于某些底层数据结构（如自定义的智能指针、内存分配器等）的实现有很大帮助，因为它可以提供额外的编译时安全保障。</p>
+<p>下面是关于 <code>NonNull</code> 的一些重要特点：</p>
+<ol>
+<li>
+<p><strong>非空性</strong>：<code>NonNull</code> 类型的主要特点是它确保了指针不为 <code>null</code>。这可以避免空指针解引用的潜在问题，提高代码的安全性。</p>
+</li>
+<li>
+<p><strong>不可变性</strong>：<code>NonNull</code> 类型的指针是可变的，即它的内部指针可以指向可变引用（<code>&amp;mut T</code>）。需要注意的是，这种可变性与 <code>&amp;mut T</code> 具有的可变性略有不同，因为 <code>NonNull</code> 类型没有借用检查器的安全保障。</p>
+</li>
+<li>
+<p><strong>构造方法</strong>：<code>NonNull</code> 类型提供了一些用于创建实例的方法，如 <code>NonNull::new</code> 和 <code>NonNull::new_unchecked</code>。</p>
+<p>其中，<code>NonNull::new</code> 是一个安全的方法，它接受一个裸指针并返回一个 <code>Option&lt;NonNull&lt;T&gt;&gt;</code>。如果传入的裸指针为 <code>null</code>，则返回 <code>None</code>。而<code>NonNull::new_unchecked</code> 是一个不安全的方法，它接受一个裸指针并直接返回一个 <code>NonNull&lt;T&gt;</code> 实例，不进行空指针检查。</p>
+</li>
+<li>
+<p><strong>方法</strong>：<code>NonNull</code> 类型提供了一些方法，如 <code>as_ptr</code>、<code>as_ref</code> 和 <code>as_mut</code>，以在不同情况下与裸指针和引用进行转换。</p>
+</li>
+<li>
+<p><strong>优化</strong>：由于 <code>NonNull</code> 类型保证了指针不为 <code>null</code>，编译器可以在某些情况下为其生成更优化的代码。</p>
+</li>
+</ol>
+<p>需要注意的是，虽然 <code>NonNull</code> 类型提供了一定程度的安全保障，但它仍然涉及裸指针操作，因此使用时要谨慎。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="w">    </span><span class="k">unsafe</span><span class="w"> </span><span class="k">fn</span> <span class="nf">add_child</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">child</span>: <span class="nb">Box</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">child</span><span class="p">.</span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">NonNull</span>::<span class="n">new_unchecked</span><span class="p">(</span><span class="bp">self</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="n">_</span><span class="p">));</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">children</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">NonNull</span>::<span class="n">new_unchecked</span><span class="p">(</span><span class="nb">Box</span>::<span class="n">leak</span><span class="p">(</span><span class="n">child</span><span class="p">)));</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个函数中，我们处理裸指针和内存泄漏，因此需要使用 <code>unsafe</code> 关键字。</p>
+<p>下面是这段代码的详细解释：</p>
+<ol>
+<li>
+<p><code>child.parent = Some(NonNull::new_unchecked(self as *mut _));</code></p>
+<p>这一行将当前节点（<code>self</code>）的裸指针设置为 <code>child</code> 节点的父节点。首先，我们将 <code>self</code> 的引用转换为一个可变裸指针（<code>*mut _</code>）。</p>
+<p>然后，我们使用 <code>NonNull::new_unchecked</code> 函数将裸指针封装为 <code>NonNull</code> 类型。这个函数是不安全的，因为它不检查传入的裸指针是否为 <code>null</code>。最后，我们将 <code>NonNull</code> 类型的父节点存储在 <code>child.parent</code> 字段中。</p>
+</li>
+<li>
+<p><code>self.children.push(NonNull::new_unchecked(Box::leak(child)));</code></p>
+<p>这一行将 <code>child</code> 节点添加到当前节点的子节点列表中。</p>
+<p>首先，我们使用 <code>Box::leak</code> 函数将 <code>child</code> 的所有权泄漏，并返回一个 <code>&amp;mut T</code> 类型的引用。这个函数是不安全的，因为泄漏的内存将永远不会被回收。</p>
+<p>然后，我们将得到的引用转换为一个可变裸指针，并使用 <code>NonNull::new_unchecked</code> 函数将裸指针封装为 <code>NonNull</code> 类型。</p>
+<p>最后，我们将 <code>NonNull</code> 类型的子节点添加到当前节点的 <code>children</code> 列表中。</p>
+</li>
+</ol>
+<p>请注意，此示例中的代码不安全，因为它涉及到裸指针和内存泄漏。</p>
+<p>总之，虽然这个例子展示了如何使用 <code>unsafe</code> 实现一个包含环的图结构，但在实际开发中，我们应该尽量避免使用 <code>unsafe</code>，除非有特殊需求。</p>
+<p><strong>3. 使用向量和这些向量的索引。有<a href="http://smallcultfollowing.com/babysteps/blog/2015/04/06/modeling-graphs-in-rust-using-vector-indices/" target="_blank" rel="noopener noreffer ">几个</a><a href="https://featherweightmusings.blogspot.com/2015/04/graphs-in-rust.html" target="_blank" rel="noopener noreffer ">可用</a>这种方法的例子和解释。</strong></p>
+<p>// 待补充</p>
+<p><strong>4. 用 <a href="https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html" target="_blank" rel="noopener noreffer "><code>UnsafeCell</code></a>使用借用的引用。对于这种方法有<a href="https://github.com/nrc/r4cppp/blob/master/graphs/README.md#node-and-unsafecell" target="_blank" rel="noopener noreffer ">解释和代码</a>。</strong></p>
+<p>// 待补充</p>
+<h3 id="我怎样才能定义一个包含对其自身字段之一的引用的结构">我怎样才能定义一个包含对其自身字段之一的引用的结构？</h3>
+<p>这是有可能的，但是这样做没有用。该结构会被自己永久借用，因此不能被移动。</p>
+<p>下面是一些说明这个问题的代码。</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">cell</span>::<span class="n">Cell</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Unmovable</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">x</span>: <span class="kt">u32</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">y</span>: <span class="nc">Cell</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="kt">u32</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Unmovable</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mi">42</span><span class="p">,</span><span class="w"> </span><span class="n">y</span>: <span class="nc">Cell</span>::<span class="n">new</span><span class="p">(</span><span class="nb">None</span><span class="p">)</span><span class="w"> </span><span class="p">};</span><span class="w">
+</span><span class="w">    </span><span class="n">test</span><span class="p">.</span><span class="n">y</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="o">&amp;</span><span class="n">test</span><span class="p">.</span><span class="n">x</span><span class="p">));</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">test</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>注意：这种设计限制了<code>Unmovable</code>类型的实例在其生命周期内的可移动性。因为<code>y</code>字段包含对<code>x</code>字段的引用，因此在引用存在的情况下，该实例不能被移动。</p>
+<p>创建一个结构体，其中一个字段直接引用其自身字段的情况并不常见。这可能会导致编译时的生命周期问题，因为结构体实例在引用的字段之前可能会被销毁。</p>
+<p>然而，这样的结构体是可以定义的，但它会受到严格的限制，如上面提到的，结构体会被永久借用且无法移动。以下是一个例子：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="cp">#![allow(dead_code)]</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">SelfReferential</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">value</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">reference</span>: <span class="kp">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SelfReferential</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">new</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">SelfReferential</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="p">;</span><span class="w">
+</span><span class="w">        </span><span class="n">SelfReferential</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">value</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">reference</span>: <span class="kp">&amp;</span><span class="nc">value</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">_self_ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SelfReferential</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="n">error</span><span class="p">[</span><span class="n">E0515</span><span class="p">]</span>: <span class="nc">cannot</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">referencing</span><span class="w"> </span><span class="n">local</span><span class="w"> </span><span class="n">variable</span><span class="w"> </span><span class="err">`</span><span class="n">value</span><span class="err">`</span><span class="w">
+</span><span class="w">  </span><span class="o">-</span>-&gt; <span class="nc">src</span><span class="o">/</span><span class="n">main</span><span class="p">.</span><span class="n">rs</span>:<span class="mi">11</span>:<span class="mi">9</span><span class="w">
+</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="mi">11</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">/</span><span class="w">         </span><span class="n">SelfReferential</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w"></span><span class="mi">12</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="w">             </span><span class="n">value</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="mi">13</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="w">             </span><span class="n">reference</span>: <span class="kp">&amp;</span><span class="nc">value</span><span class="p">,</span><span class="w">
+</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="w">                        </span><span class="o">------</span><span class="w"> </span><span class="err">`</span><span class="n">value</span><span class="err">`</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">borrowed</span><span class="w"> </span><span class="n">here</span><span class="w">
+</span><span class="w"></span><span class="mi">14</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="w">         </span><span class="p">}</span><span class="w">
+</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="n">_________</span><span class="o">^</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">referencing</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">owned</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="n">function</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">For</span><span class="w"> </span><span class="n">more</span><span class="w"> </span><span class="n">information</span><span class="w"> </span><span class="n">about</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">try</span><span class="w"> </span><span class="err">`</span><span class="n">rustc</span><span class="w"> </span><span class="o">--</span><span class="n">explain</span><span class="w"> </span><span class="n">E0515</span><span class="err">`</span><span class="p">.</span><span class="w">
+</span><span class="w"></span><span class="n">error</span>: <span class="nc">could</span><span class="w"> </span><span class="n">not</span><span class="w"> </span><span class="n">compile</span><span class="w"> </span><span class="err">`</span><span class="n">leetcode_in_rust</span><span class="err">`</span><span class="w"> </span><span class="p">(</span><span class="n">bin</span><span class="w"> </span><span class="s">&#34;leetcode_in_rust&#34;</span><span class="p">)</span><span class="w"> </span><span class="n">due</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="n">error</span><span class="w">
+</span></code></pre></div><p>这段代码不能成功编译，因为<code>value</code>字段的生命周期比<code>SelfReferential</code>实例短。当<code>new()</code>函数返回时，<code>value</code>将被销毁，而引用<code>&amp;value</code>将成为悬垂引用。这就是为什么编译器会报错。</p>
+<p>如果你确实需要在结构体中引用其自身的字段，可以考虑使用<code>std::rc::Rc</code>和<code>std::cell::RefCell</code>（单线程场景）或<code>std::sync::Arc</code>和<code>std::sync::Mutex/RwLock</code>（多线程场景）组合，这将允许你创建引用计数指针以确保结构体实例在其引用的字段之前不会被销毁。</p>
+<p>然而，这种方法并不是最佳实践，因为它可能导致难以理解的代码和潜在的性能问题。在大多数情况下，更好的方法是重新审视你的数据结构设计，看看是否有其他方式来实现所需的功能，而无需将结构体字段的引用存储在结构体中。</p>
+<p>下面是一个示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">rc</span>::<span class="n">Rc</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">cell</span>::<span class="n">RefCell</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">MyStruct</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">value</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">reference</span>: <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">MyStruct</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="w"> </span><span class="n">MyStruct</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">value</span>: <span class="kt">i32</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">MyStruct</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">MyStruct</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">value</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">reference</span>: <span class="nb">None</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">set_reference</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">other</span>: <span class="kp">&amp;</span><span class="nc">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">MyStruct</span><span class="o">&gt;&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">Rc</span>::<span class="n">clone</span><span class="p">(</span><span class="n">other</span><span class="p">));</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">my_struct1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">RefCell</span>::<span class="n">new</span><span class="p">(</span><span class="n">MyStruct</span>::<span class="n">new</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">my_struct2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">RefCell</span>::<span class="n">new</span><span class="p">(</span><span class="n">MyStruct</span>::<span class="n">new</span><span class="p">(</span><span class="mi">2</span><span class="p">)));</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="n">my_struct1</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">().</span><span class="n">set_reference</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_struct2</span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;my_struct1 value: {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">my_struct1</span><span class="p">.</span><span class="n">borrow</span><span class="p">().</span><span class="n">value</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="k">ref</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_struct1</span><span class="p">.</span><span class="n">borrow</span><span class="p">().</span><span class="n">reference</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;my_struct1 reference value: {}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="n">borrow</span><span class="p">().</span><span class="n">value</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>在这个例子中，我们创建了一个名为<code>MyStruct</code>的结构体，其中包含一个名为<code>reference</code>的字段，用于存储指向另一个<code>MyStruct</code>实例的引用。我们使用<code>Rc&lt;RefCell&lt;MyStruct&gt;&gt;</code>来实现引用计数指针。<code>Rc</code>用于共享所有权，而<code>RefCell</code>允许在运行时对借用进行检查，从而实现可变性。</p>
+<p>注意：这个解决方案在单线程场景下工作良好。如果你在多线程环境中使用这个结构，你应该使用<code>std::sync::Arc</code>和<code>std::sync::Mutex</code>或<code>std::sync::RwLock</code>代替<code>Rc</code>和<code>RefCell</code>。</p>
+<h1 id="reference">Reference</h1>
+<ol>
+<li>GPT-4</li>
+<li><a href="http://smallcultfollowing.com/babysteps/blog/2015/04/06/modeling-graphs-in-rust-using-vector-indices/">http://smallcultfollowing.com/babysteps/blog/2015/04/06/modeling-graphs-in-rust-using-vector-indices/</a></li>
+<li><a href="https://rust-unofficial.github.io/too-many-lists/" target="_blank" rel="noopener noreffer ">Introduction - Learning Rust With Entirely Too Many Linked Lists (rust-unofficial.github.io)</a></li>
+<li><a href="https://course.rs/basic/ownership/ownership.html" target="_blank" rel="noopener noreffer ">所有权 - Rust语言圣经(Rust Course)</a></li>
+<li><a href="https://www.purewhite.io/2021/09/01/rust-faq/#%e6%89%80%e6%9c%89%e6%9d%83" target="_blank" rel="noopener noreffer ">【译】Rust 常见的问题 | Pure White</a></li>
+<li><a href="https://doc.rust-lang.org/std/ptr/struct.NonNull.html" target="_blank" rel="noopener noreffer ">NonNull in std::ptr - Rust (rust-lang.org)</a></li>
+<li><a href="https://github.com/nrc/r4cppp/blob/master/graphs/README.md#node-and-unsafecell">https://github.com/nrc/r4cppp/blob/master/graphs/README.md#node-and-unsafecell</a></li>
+</ol></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-04-12</span>
+            </div><div class="post-info-license">
+                <span>[CC 4.0 BY-SA](https://creativecommons.org/licenses/by-nc/4.0/)</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/ownership_in_rust/" data-title="Rust 所有权机制" data-via="@solaris_linus" data-hashtags="Rust"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/ownership_in_rust/" data-title="Rust 所有权机制"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/ownership_in_rust/" data-title="Rust 所有权机制"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/ownership_in_rust/" data-title="Rust 所有权机制"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/rust/">Rust</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/" class="prev" rel="prev" title="基于格式比较的未知协议消息聚类"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>基于格式比较的未知协议消息聚类</a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.68.3">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.11"><i class="far fa-kiss-wink-heart fa-fw" aria-hidden="true"></i> LoveIt</a>
+                </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Solar1s</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/css/lightgallery-bundle.min.css"><script type="text/javascript" src="https://.disqus.com/embed.js" defer></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/lightgallery.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/thumbnail/lg-thumbnail.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/zoom/lg-zoom.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{},"lightgallery":true};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
