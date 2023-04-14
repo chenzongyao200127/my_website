@@ -3,7 +3,31 @@
         <title>Tags - Tag - Solar1s&#39; Blog</title>
         <link>http://example.org/tags/</link>
         <description>Tags - Tag - Solar1s&#39; Blog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Wed, 12 Apr 2023 18:02:41 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 14 Apr 2023 17:19:39 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>Android</title>
+    <link>http://example.org/tags/android/</link>
+    <pubDate>Fri, 14 Apr 2023 17:19:39 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/android/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Deep Learning</title>
+    <link>http://example.org/tags/deep-learning/</link>
+    <pubDate>Fri, 14 Apr 2023 17:19:39 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/deep-learning/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Malware</title>
+    <link>http://example.org/tags/malware/</link>
+    <pubDate>Fri, 14 Apr 2023 17:19:39 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/malware/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Rust</title>
     <link>http://example.org/tags/rust/</link>
     <pubDate>Wed, 12 Apr 2023 18:02:41 &#43;0800</pubDate>
@@ -57,14 +81,6 @@
     <pubDate>Mon, 03 Apr 2023 17:03:10 &#43;0800</pubDate>
     <author>Solar1s</author>
     <guid>http://example.org/tags/java-web/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Security</title>
-    <link>http://example.org/tags/security/</link>
-    <pubDate>Mon, 03 Apr 2023 17:03:10 &#43;0800</pubDate>
-    <author>Solar1s</author>
-    <guid>http://example.org/tags/security/</guid>
     <description><![CDATA[]]></description>
 </item>
 </channel>
