@@ -9,7 +9,8 @@
     <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
     <author>Solar1s</author>
     <guid>http://example.org/posts/clustering_of_unknown_protocol_messages_based_on_format_comparison/</guid>
-    <description><![CDATA[<p>原文链接：https://doi.org/10.1016/j.comnet.2020.107296</p>]]></description>
+    <description><![CDATA[<p>原文链接：https://doi.org/10.1016/j.comnet.2020.107296
+复现结果：https://github.com/chenzongyao200127/Clustering_of_unknown_protocol_messages_based_on_format_comparison</p>]]></description>
 </item>
 </channel>
 </rss>
