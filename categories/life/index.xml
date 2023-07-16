@@ -1,0 +1,15 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Life - Category - Solar1s&#39; Blog</title>
+        <link>http://example.org/categories/life/</link>
+        <description>Life - Category - Solar1s&#39; Blog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</lastBuildDate><atom:link href="http://example.org/categories/life/" rel="self" type="application/rss+xml" /><item>
+    <title>Life Is a Journey, Not a Rat-Race</title>
+    <link>http://example.org/posts/life_is_not_a_rat_rice/</link>
+    <pubDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</pubDate>
+    <author>Cyrus</author>
+    <guid>http://example.org/posts/life_is_not_a_rat_rice/</guid>
+    <description><![CDATA[<p>Embrace and enjoy your very own path</p>]]></description>
+</item>
+</channel>
+</rss>

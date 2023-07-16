@@ -2,14 +2,18 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
+            <loc>http://example.org/categories/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/categories/life/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/posts/life_is_not_a_rat_rice/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/life-lession/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/motivation/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/posts/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
+            <loc>http://example.org/tags/</loc><lastmod>2023-07-16T20:22:34&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/android/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/categories/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/deep-learning/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/malware/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/posts/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
             <loc>http://example.org/categories/security/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
-            <loc>http://example.org/tags/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
             <loc>http://example.org/posts/deep_learning_for_android_malware_defenses_-_a_systematic_literature_review/</loc><lastmod>2023-04-14T17:19:39&#43;08:00</lastmod></url><url>
             <loc>http://example.org/categories/programming-languages/</loc><lastmod>2023-04-12T18:02:41&#43;08:00</lastmod></url><url>
             <loc>http://example.org/tags/rust/</loc><lastmod>2023-04-12T18:02:41&#43;08:00</lastmod></url><url>
