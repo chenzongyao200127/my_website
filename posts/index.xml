@@ -37,28 +37,12 @@
     <description><![CDATA[<p>本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing</p>]]></description>
 </item>
 <item>
-    <title>Prompt 工程学习记录</title>
-    <link>http://example.org/posts/prompt_learning_note/</link>
-    <pubDate>Mon, 03 Apr 2023 20:52:56 &#43;0800</pubDate>
-    <author>Solar1s</author>
-    <guid>http://example.org/posts/prompt_learning_note/</guid>
-    <description><![CDATA[<p>Prompt工程是一种相对较新的学科，用于开发和优化提示，以便高效地使用语言模型（LM）进行各种应用和研究主题。在AGI飞速发展的背景下，Prompt工程技能有助于更好地理解大型语言模型（LLM）的能力和局限性。本文记录PE学习过程中的一些概念与技巧，将持续更新ing</p>]]></description>
-</item>
-<item>
     <title>Java Web 安全研究初探</title>
     <link>http://example.org/posts/a_first_look_at_java_web_security_research/</link>
     <pubDate>Mon, 03 Apr 2023 17:03:10 &#43;0800</pubDate>
     <author>Solar1s</author>
     <guid>http://example.org/posts/a_first_look_at_java_web_security_research/</guid>
     <description><![CDATA[<p>本文是俺对 evilpan 大佬https://evilpan.com/2023/04/01/java-ee/博文的阅读笔记与补充:)</p>]]></description>
-</item>
-<item>
-    <title>AI &#43; Productivity Tool Collections</title>
-    <link>http://example.org/posts/ai_&#43;_productivity_tool_collections/</link>
-    <pubDate>Thu, 23 Mar 2023 15:23:18 &#43;0800</pubDate>
-    <author>Solar1s</author>
-    <guid>http://example.org/posts/ai_&#43;_productivity_tool_collections/</guid>
-    <description><![CDATA[<p>收集各种AI+生产力工具，持续更新ing</p>]]></description>
 </item>
 </channel>
 </rss>
