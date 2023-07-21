@@ -28,7 +28,7 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "http:\/\/example.org\/posts\/summary_of_gdb_commands_for_x86-64_systems\/"
-        },"genre": "posts","keywords": "GDB, Reverse engineering","wordcount":  4168 ,
+        },"genre": "posts","keywords": "GDB, Reverse engineering","wordcount":  4170 ,
         "url": "http:\/\/example.org\/posts\/summary_of_gdb_commands_for_x86-64_systems\/","datePublished": "2023-07-21T16:53:07+08:00","dateModified": "2023-07-21T16:53:07+08:00","publisher": {
             "@type": "Organization",
             "name": ""},"author": {
@@ -70,7 +70,7 @@
             <div class="toc-content" id="toc-content-auto"></div>
         </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">GDB 速查表及原理简介</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-07-21">2023-07-21</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;4168 words&nbsp;
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-07-21">2023-07-21</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;4170 words&nbsp;
                 <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;9 minutes&nbsp;</div>
         </div><div class="details toc" id="toc-static"  data-kept="">
                 <div class="details-summary toc-title">
@@ -189,7 +189,16 @@ undisplay 					Turn off display mode
 </code></pre></div><h2 id="gdb-实现原理简介">GDB 实现原理简介</h2>
 <p>GNU调试器（英语：GNU Debugger，缩写：GDB），是GNU软件系统中的标准调试器，此外GDB也是个具有移携性的调试器，经过移携需求的调修与重新编译，如今许多的类UNIX操作系统上都可以使用GDB，而现有GDB所能支持调试的编程语言有C、C++、Pascal以及FORTRAN。</p>
 <p>GDB 使用一个名为 <code>ptrace</code>（名字是 &ldquo;process trace&rdquo; 的缩写）的系统调用，来观察和控制另一个进程的执行，以及检查和更改进程的内存和寄存器。</p>
-<p>![image-20230721162444295](./Summary of GDB commands for x86-64 Systems.assets/image-20230721162444295.png)</p>
+<p><figure><a class="lightgallery" href="/images/GDB.asserts/gdb.png" title="ptrace and gdb" data-thumbnail="/images/GDB.asserts/gdb.png" data-sub-html="<h2>gdb &lt;-&gt; ptrace </h2><p>ptrace and gdb</p>">
+        <img
+            class="lazyload"
+            src="/svg/loading.min.svg"
+            data-src="/images/GDB.asserts/gdb.png"
+            data-srcset="/images/GDB.asserts/gdb.png, /images/GDB.asserts/gdb.png 1.5x, /images/GDB.asserts/gdb.png 2x"
+            data-sizes="auto"
+            alt="/images/GDB.asserts/gdb.png" />
+    </a><figcaption class="image-caption">gdb <-> ptrace </figcaption>
+    </figure></p>
 <p>断点是通过将给定内存地址处的一个指令替换为另一个特殊指令来实现的。执行断点指令会导致 SIGTRAP。</p>
 <h3 id="ptrace"><code>ptrace</code></h3>
 <p>从名字可以看出，<code>ptrace</code> 是一个用于进程跟踪的系统调用。当一个进程调用 <code>ptrace</code> 来跟踪另一个进程时：</p>
