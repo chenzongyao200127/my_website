@@ -3,7 +3,23 @@
         <title>Tags - Tag - Solar1s&#39; Blog</title>
         <link>http://example.org/tags/</link>
         <description>Tags - Tag - Solar1s&#39; Blog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>GDB</title>
+    <link>http://example.org/tags/gdb/</link>
+    <pubDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/gdb/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Reverse engineering</title>
+    <link>http://example.org/tags/reverse-engineering/</link>
+    <pubDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/tags/reverse-engineering/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Life Lession</title>
     <link>http://example.org/tags/life-lession/</link>
     <pubDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</pubDate>
@@ -65,22 +81,6 @@
     <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
     <author>Solar1s</author>
     <guid>http://example.org/tags/message-clustering/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Protocol Reverse Engineering</title>
-    <link>http://example.org/tags/protocol-reverse-engineering/</link>
-    <pubDate>Thu, 06 Apr 2023 19:35:34 &#43;0800</pubDate>
-    <author>Solar1s</author>
-    <guid>http://example.org/tags/protocol-reverse-engineering/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Java Web</title>
-    <link>http://example.org/tags/java-web/</link>
-    <pubDate>Mon, 03 Apr 2023 17:03:10 &#43;0800</pubDate>
-    <author>Solar1s</author>
-    <guid>http://example.org/tags/java-web/</guid>
     <description><![CDATA[]]></description>
 </item>
 </channel>

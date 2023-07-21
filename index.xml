@@ -3,9 +3,17 @@
         <title>Solar1s&#39; Blog</title>
         <link>http://example.org/</link>
         <description>Life Is a Journey, Not a Rat-Race.</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</lastBuildDate>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</lastBuildDate>
             <atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>GDB 速查表及原理简介</title>
+    <link>http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/</link>
+    <pubDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/</guid>
+    <description><![CDATA[<p>记录一些使用 GDB 时的常用操作:)</p>]]></description>
+</item>
+<item>
     <title>Life Is a Journey, Not a Rat-Race</title>
     <link>http://example.org/posts/life_is_not_a_rat_rice/</link>
     <pubDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</pubDate>

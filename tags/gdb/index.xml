@@ -1,0 +1,15 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>GDB - Tag - Solar1s&#39; Blog</title>
+        <link>http://example.org/tags/gdb/</link>
+        <description>GDB - Tag - Solar1s&#39; Blog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</lastBuildDate><atom:link href="http://example.org/tags/gdb/" rel="self" type="application/rss+xml" /><item>
+    <title>GDB 速查表及原理简介</title>
+    <link>http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/</link>
+    <pubDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/</guid>
+    <description><![CDATA[<p>记录一些使用 GDB 时的常用操作:)</p>]]></description>
+</item>
+</channel>
+</rss>

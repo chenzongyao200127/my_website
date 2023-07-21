@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>GDB 速查表及原理简介 - Solar1s&#39; Blog</title><meta name="Description" content="本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing"><meta property="og:title" content="GDB 速查表及原理简介" />
+<meta property="og:description" content="本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/" />
+<meta property="og:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+<meta property="article:published_time" content="2023-07-21T16:53:07+08:00" />
+<meta property="article:modified_time" content="2023-07-21T16:53:07+08:00" /><meta property="og:site_name" content="Solar1s&#39; Personal Blog" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://qlogo2.store.qq.com/qzone/1139317689/1139317689/100?1668077096"/>
+
+<meta name="twitter:title" content="GDB 速查表及原理简介"/>
+<meta name="twitter:description" content="本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing"/>
+<meta name="application-name" content="Solar1s&#39; Personal Blog">
+<meta name="apple-mobile-web-app-title" content="Solar1s&#39; Personal Blog"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="icon" href="../static/favion.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/" /><link rel="prev" href="http://example.org/posts/life_is_not_a_rat_rice/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"></noscript><link rel="preload" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "GDB 速查表及原理简介",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/posts\/summary_of_gdb_commands_for_x86-64_systems\/"
+        },"genre": "posts","keywords": "GDB, Reverse engineering","wordcount":  4168 ,
+        "url": "http:\/\/example.org\/posts\/summary_of_gdb_commands_for_x86-64_systems\/","datePublished": "2023-07-21T16:53:07+08:00","dateModified": "2023-07-21T16:53:07+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Solar1s"
+            },"description": "本文记录一些俺在学习Rust智能指针的知识总结，持续更新ing"
+    }
+    </script></head>
+    <body data-header-desktop="fixed" data-header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Solar1s&#39; Blog">Life Is a Journey, Not a Rat-Race.</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><a class="menu-item" href="/about/"> 关于 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Solar1s&#39; Blog">Life Is a Journey, Not a Rat-Race.</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a class="menu-item" href="/about/" title="">关于</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+            </a></div>
+    </div>
+</header><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">GDB 速查表及原理简介</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>Solar1s</a></span>&nbsp;<span class="post-category">included in <a href="/categories/security/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Security</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2023-07-21">2023-07-21</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;4168 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;9 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#starting">Starting</a></li>
+    <li><a href="#running-and-stopping">Running and stopping</a></li>
+    <li><a href="#breakpoints">Breakpoints</a></li>
+    <li><a href="#execution">Execution</a></li>
+    <li><a href="#examining-code">Examining code</a></li>
+    <li><a href="#examining-data">Examining data</a></li>
+    <li><a href="#useful-information">Useful information</a></li>
+    <li><a href="#gdb-实现原理简介">GDB 实现原理简介</a>
+      <ul>
+        <li><a href="#ptrace"><code>ptrace</code></a></li>
+        <li><a href="#gdb-断点的实现原理">GDB 断点的实现原理</a></li>
+        <li><a href="#修改子进程内存">修改子进程内存</a></li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>记录一些使用 GDB 时的常用操作:)</p>
+<h2 id="starting">Starting</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">gdb
+gdb &lt;file&gt;
+</code></pre></div><h2 id="running-and-stopping">Running and stopping</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">quit 					Exit gdb
+run 					Run program
+run <span class="m">1</span> <span class="m">2</span> <span class="m">3</span> 				Run program with command-line arguments <span class="m">1</span> <span class="m">2</span> <span class="m">3</span>
+<span class="nb">kill</span> 					Stop the program
+quit 					Exit gdb
+Ctrl-d 					Exit gdb
+</code></pre></div><p>Note: <code>Ctrl-C</code> does not exit from gdb, but halts the current gdb command</p>
+<h2 id="breakpoints">Breakpoints</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nb">break</span> sum 				Set breakpoint at the entry to <span class="k">function</span> sum
+<span class="nb">break</span> *0x80483c3 		Set breakpoint at address 0x80483c3
+delete <span class="m">1</span> 				Delete breakpoint <span class="m">1</span>
+disable <span class="m">1</span> 				Disable the breakpoint <span class="m">1</span>
+							<span class="o">(</span>gdb numbers each breakpoint you create<span class="o">)</span>
+<span class="nb">enable</span> <span class="m">1</span> 				Enable breakpoint <span class="m">1</span>
+delete 					Delete all breakpoints
+clear sum 				Clear any breakpoints at the entry to <span class="k">function</span> sum
+</code></pre></div><h2 id="execution">Execution</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">stepi 					Execute one instruction
+stepi <span class="m">4</span> 				Execute four instructions
+nexti 					Like stepi, but proceed through <span class="k">function</span> calls without stopping
+step 					Execute one C statement
+<span class="k">continue</span> 				Resume execution <span class="k">until</span> the next breakpoint
+<span class="k">until</span> <span class="m">3</span> 				Continue executing <span class="k">until</span> program hits breakpoint <span class="m">3</span>
+finish 					Resume execution <span class="k">until</span> current <span class="k">function</span> returns
+call sum<span class="o">(</span>1, 2<span class="o">)</span> 			Call sum<span class="o">(</span>1,2<span class="o">)</span> and print <span class="k">return</span> value
+</code></pre></div><h2 id="examining-code">Examining code</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">disas 					Disassemble current <span class="k">function</span>
+disas sum 				Disassemble <span class="k">function</span> sum
+disas 0x80483b7 		Disassemble <span class="k">function</span> around 0x80483b7
+disas 0x80483b7 0x80483c7 	Disassemble code within specified address range
+print /x <span class="nv">$rip</span> 			Print program counter in hex
+print /d <span class="nv">$rip</span> 			Print program counter in decimal
+print /t <span class="nv">$rip</span> 			Print program counter in binary
+</code></pre></div><h2 id="examining-data">Examining data</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">print /d <span class="nv">$rax</span> 				Print contents of %rax in decimal
+print /x <span class="nv">$rax</span> 				Print contents of %rax in hex
+print /t <span class="nv">$rax</span> 				Print contents of %rax in binary
+print /d <span class="o">(</span>int<span class="o">)</span><span class="nv">$rax</span> 			Print contents of %rax in decimal after sign-extending lower 32-bits. You need this to print 32-bit, negative numbers stored in the lower <span class="m">32</span> bits of %rax. For example, <span class="k">if</span> the lower 32-bits of %rax store 0xffffffff, you will see 
+						 <span class="o">(</span>gdb<span class="o">)</span> print <span class="nv">$rax</span>
+						 <span class="nv">$1</span> <span class="o">=</span> <span class="m">4294967295</span>
+						 <span class="o">(</span>gdb<span class="o">)</span> print <span class="o">(</span>int<span class="o">)</span><span class="nv">$rax</span>
+						 <span class="nv">$2</span> <span class="o">=</span> -1
+
+print /d 0x100 				Print decimal representation of 0x100
+print /x <span class="m">555</span> 				Print hex representation of <span class="m">555</span>
+print /x <span class="o">(</span><span class="nv">$rsp</span>+8<span class="o">)</span> 			Print <span class="o">(</span>contents of %rsp<span class="o">)</span> + <span class="m">8</span> in hex
+print *<span class="o">(</span>int *<span class="o">)</span> 0xbffff890 	Print integer at address 0xbffff890
+print *<span class="o">(</span>int *<span class="o">)</span> <span class="o">(</span><span class="nv">$rsp</span>+8<span class="o">)</span> 	Print integer at address %rsp + <span class="m">8</span>
+print <span class="o">(</span>char *<span class="o">)</span> 0xbfff890 	Examine a string stored at 0xbffff890
+
+x/w 0xbffff890 				Examine <span class="o">(</span>4-byte<span class="o">)</span> word starting at address 0xbffff890
+x/w <span class="nv">$rsp</span> 					Examine <span class="o">(</span>4-byte<span class="o">)</span> word starting at address in <span class="nv">$rsp</span>
+x/wd <span class="nv">$rsp</span> 					Examine <span class="o">(</span>4-byte<span class="o">)</span> word starting at address in <span class="nv">$rsp</span>. Print in decimal
+x/2w <span class="nv">$rsp</span> 					Examine two <span class="o">(</span>4-byte<span class="o">)</span> words starting at address in <span class="nv">$rsp</span>
+x/2wd <span class="nv">$rsp</span> 					Examine two <span class="o">(</span>4-byte<span class="o">)</span> words starting at address in <span class="nv">$rsp</span>. Print in decimal
+x/g <span class="nv">$rsp</span> 					Examine <span class="o">(</span>8-byte<span class="o">)</span> word starting at address in <span class="nv">$rsp</span>.
+x/gd <span class="nv">$rsp</span> 					Examine <span class="o">(</span>8-byte<span class="o">)</span> word starting at address in <span class="nv">$rsp</span>. Print in decimal
+    						gef➤  x/g 0x6032d0
+    						0x6032d0 &lt;node1&gt;:       <span class="m">4294967628</span>
+    						gef➤  x/2w 0x6032d0
+							0x6032d0 &lt;node1&gt;:       <span class="m">332</span>     <span class="m">1</span>
+
+x/a <span class="nv">$rsp</span> 					Examine address in <span class="nv">$rsp</span>. Print as offset from previous global symbol.
+x/s 0xbffff890 				Examine a string stored at 0xbffff890
+x/20b sum 					Examine first <span class="m">20</span> opcode bytes of <span class="k">function</span> sum
+x/10i sum 					Examine first <span class="m">10</span> instructions of <span class="k">function</span> sum
+ 
+Note: the format string <span class="k">for</span> the ‘x’ <span class="nb">command</span> has the general form: 
+x/<span class="o">[</span>NUM<span class="o">][</span>SIZE<span class="o">][</span>FORMAT<span class="o">]</span> where
+ - <span class="nv">NUM</span> <span class="o">=</span> number of objects to display
+ - <span class="nv">SIZE</span> <span class="o">=</span> size of each object <span class="o">(</span><span class="nv">b</span><span class="o">=</span>byte, <span class="nv">h</span><span class="o">=</span>half-word, <span class="nv">w</span><span class="o">=</span>word, <span class="nv">g</span><span class="o">=</span>giant <span class="o">(</span>quad-word<span class="o">))</span>
+ - <span class="nv">FORMAT</span> <span class="o">=</span> how to display each object <span class="o">(</span><span class="nv">d</span><span class="o">=</span>decimal, <span class="nv">x</span><span class="o">=</span>hex, <span class="nv">o</span><span class="o">=</span>octal, etc.<span class="o">)</span>
+If you don’t specify SIZE or FORMAT, either a default value, or the last value you specified in a previous ‘print’ or ‘x’ <span class="nb">command</span> is used. 
+</code></pre></div><h2 id="useful-information">Useful information</h2>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">backtrace 					Print the current address and stack backtrace
+where 						Print the current address and stack backtrace
+info program 				Print current status of the program<span class="o">)</span>
+info functions 				Print functions in program
+info stack 					Print backtrace of the stack<span class="o">)</span>
+info frame 					Print information about the current stack frame
+info registers 				Print registers and their contents
+info breakpoints 			Print status of user-settable breakpoints
+display /FMT EXPR 			Print expression EXPR using format FMT every <span class="nb">time</span> GDB stops
+undisplay 					Turn off display mode
+<span class="nb">help</span> 						Get information about gdb
+</code></pre></div><h2 id="gdb-实现原理简介">GDB 实现原理简介</h2>
+<p>GNU调试器（英语：GNU Debugger，缩写：GDB），是GNU软件系统中的标准调试器，此外GDB也是个具有移携性的调试器，经过移携需求的调修与重新编译，如今许多的类UNIX操作系统上都可以使用GDB，而现有GDB所能支持调试的编程语言有C、C++、Pascal以及FORTRAN。</p>
+<p>GDB 使用一个名为 <code>ptrace</code>（名字是 &ldquo;process trace&rdquo; 的缩写）的系统调用，来观察和控制另一个进程的执行，以及检查和更改进程的内存和寄存器。</p>
+<p>![image-20230721162444295](./Summary of GDB commands for x86-64 Systems.assets/image-20230721162444295.png)</p>
+<p>断点是通过将给定内存地址处的一个指令替换为另一个特殊指令来实现的。执行断点指令会导致 SIGTRAP。</p>
+<h3 id="ptrace"><code>ptrace</code></h3>
+<p>从名字可以看出，<code>ptrace</code> 是一个用于进程跟踪的系统调用。当一个进程调用 <code>ptrace</code> 来跟踪另一个进程时：</p>
+<ul>
+<li>调用 <code>ptrace</code> 的进程会变成被跟踪进程的父进程。在这种上下文中，我们通常称调用 <code>ptrace</code> 的进程为 &ldquo;追踪器&rdquo;，被追踪的进程为 &ldquo;被追踪者&rdquo;。</li>
+<li>被跟踪进程的状态将被标记为 <code>TASK_TRACED</code>。这是一个特殊的状态，表示该进程正在被另一个进程跟踪。</li>
+<li>发送给被跟踪进程的信号（除 SIGKILL 信号外）将被转发给父进程，而被跟踪的子进程会被阻塞。这意味着，当子进程收到一个信号时，它不会立即对该信号进行响应。相反，这个信号将被发送给追踪器，然后由追踪器决定如何处理这个信号。</li>
+<li>在收到信号后，追踪器可以对子进程进行检查和修改，然后让子进程继续执行。这为调试提供了可能，因为追踪器可以在子进程继续执行之前改变其状态，或者在子进程接收到信号后查看其状态。</li>
+</ul>
+<p>简而言之，<code>ptrace</code> 系统调用提供了一种机制，使一个进程能够控制另一个进程的执行，查看和更改它的内存和寄存器。这是很多调试器，包括 GDB，在进行调试时所使用的主要工具。</p>
+<blockquote>
+<p>PS: 信号</p>
+<p>在操作系统中，信号是一种软件中断，用于向进程传达某些类型的信息。信号可以由用户（使用键盘等输入设备）、操作系统（如内存错误、定时器过期等）或其他进程（使用kill命令或调用kill()函数等）产生。</p>
+<p>例如，当你在命令行界面按下 <code>Ctrl+C</code>，就会向前台进程发送一个 <code>SIGINT</code>（中断信号）。当进程接收到这个信号时，默认行为是结束进程。然而，进程也可以选择自定义这个信号的处理方式，比如忽略这个信号，或者执行特定的处理函数。</p>
+<p>当我们谈到 &ldquo;发送给被跟踪进程的信号（除 SIGKILL 信号外）将被转发给父进程&rdquo;，这意味着如果其他进程试图通过发送信号来影响被跟踪的进程，这个信号会首先被追踪器（即父进程）接收到。然后，追踪器可以决定是否将这个信号传递给被追踪的进程，或者以何种方式对这个信号进行处理。</p>
+<p>此外，SIGKILL是一个特殊的信号，它的默认行为是立即结束进程，并且不能被忽略或捕获。这就是为什么在上述描述中特别指出 &ldquo;除 SIGKILL 信号外&rdquo; 的原因。即使进程正在被跟踪，SIGKILL信号依然可以直接结束该进程。</p>
+</blockquote>
+<p>在 <code>man ptrace</code> 中可以找到 ptrace 的定义原型:</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;sys/ptrace.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="kt">long</span> <span class="nf">ptrace</span><span class="p">(</span><span class="k">enum</span> <span class="n">__ptrace_request</span> <span class="n">request</span><span class="p">,</span> <span class="n">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">addr</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+</code></pre></div><p>参数的意义如下：</p>
+<ol>
+<li>
+<p><code>request</code>：指定了我们要使用 ptrace 的什么功能, 大致可以分为以下几类:</p>
+<ul>
+<li><code>PTRACE_ATTACH</code> 或 <code>PTRACE_TRACEME</code> 建立进程间的跟踪关系;
+<ul>
+<li><code>PTRACE_TRACEME</code> 是被跟踪子进程调用的, 表示让父进程来跟踪自己, 通常是通过 GDB 启动新进程的时候使用;</li>
+<li><code>PTRACE_ATTACH</code> 是父进程调用 attach 到已经运行的子进程中; 这个命令会有权限的检查, non-root 的进程不能 attach 到 root 进程中;</li>
+</ul>
+</li>
+<li><code>PTRACE_PEEKTEXT</code>, <code>PTRACE_PEEKDATA</code>, <code>PTRACE_PEEKUSR</code> 等读取子进程内存/寄存器中保留的值;</li>
+<li><code>PTRACE_POKETEXT</code>, <code>PTRACE_POKEDATA</code>, <code>PTRACE_POKEUSR</code> 等修改被跟踪进程的内存/寄存器;</li>
+<li><code>PTRACE_CONT</code>，<code>PTRACE_SYSCALL</code>, <code>PTRACE_SINGLESTEP</code> 控制被跟踪进程以何种方式继续运行;
+<ul>
+<li><code>PTRACE_SYSCALL</code> 会让被调用进程在每次 进入/退出 系统调用时都触发一次 <code>SIGTRAP</code>; <code>strace</code> 就是通过调用它来实现的, 在每次进入系统调用的时候读取出系统调用参数, 在退出系统调用的时候读取出返回值;</li>
+<li><code>PTRACE_SINGLESTEP</code> 会在每执行完一条指令后都触发一次 <code>SIGTRAP</code>; GDB 的 <code>nexti</code>, <code>next</code> 命令都是通过它来实现的;</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>补充：</p>
+<p>在这个上下文中，<code>PTRACE_SYSCALL</code> 和 <code>PTRACE_SINGLESTEP</code> 是 <code>ptrace</code> 系统调用的两种请求方式，它们允许进程在特定的情况下接收 <code>SIGTRAP</code> 信号。</p>
+<ol>
+<li>
+<p><code>PTRACE_SYSCALL</code> 是 <code>ptrace</code> 请求的一种，它让被调试的进程在每次进入或退出系统调用时都发送一个 <code>SIGTRAP</code> 信号。<code>SIGTRAP</code> 是一种由进程状态改变或者调试事件所引发的信号。</p>
+<p>当 <code>ptrace</code> 收到 <code>SIGTRAP</code> 信号时，它就知道被调试的进程正在进入或退出一个系统调用。这就是 <code>strace</code> 工具如何工作的。<code>strace</code> 在每次进入系统调用时，会读取系统调用的参数，然后在系统调用退出时，读取出返回值。因此，<code>strace</code> 可以提供一份详细的系统调用报告，包括每个调用的参数和返回值。</p>
+</li>
+<li>
+<p><code>PTRACE_SINGLESTEP</code> 是 <code>ptrace</code> 请求的另一种，它允许被调试的进程在执行完一条指令后发送一个 <code>SIGTRAP</code> 信号。</p>
+<p>这意味着调试器（如 GDB）可以在每次接收到 <code>SIGTRAP</code> 信号时，停止被调试的进程，查看或修改其状态，然后决定是否继续执行。这就是 GDB 的 <code>nexti</code> 和 <code>next</code> 命令如何工作的。<code>nexti</code> 和 <code>next</code> 命令会让被调试的程序执行下一条指令，然后暂停，这样你就可以看到每一步的结果。</p>
+</li>
+</ol>
+<p>在这两种模式下，调试器都可以利用 <code>SIGTRAP</code> 信号来监控被调试进程的状态，以便在关键点进行检查或修改。</p>
+</blockquote>
+<ul>
+<li><code>PTRACE_DETACH</code>, <code>PTRACE_KILL</code> 脱离进程间的跟踪关系;
+<ul>
+<li>当父进程在子进程之前结束时, trace 关系会被自动解除;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>pid</code>：这是你想要跟踪的进程的进程ID。对于某些请求（如 <code>PTRACE_TRACEME</code>），这个参数被忽略。</p>
+</li>
+<li>
+<p><code>addr</code>：对于一些 <code>request</code> 类型，这个参数表示一个地址，例如你希望读/写的内存地址，或者你希望获取/设置的寄存器。</p>
+</li>
+<li>
+<p><code>data</code>：对于一些 <code>request</code> 类型，这个参数表示一个数据值，例如你希望写入内存或寄存器的值。</p>
+</li>
+</ol>
+<p><code>ptrace</code> 函数的返回值根据 <code>request</code> 参数的不同而不同。通常，如果成功，它会返回请求的系统信息。如果出现错误，它会返回 -1 并设置 <code>errno</code> 以指示错误。</p>
+<p>需要注意的是，对 <code>ptrace</code> 的调用可能会因操作系统的不同而有所不同。另外，因为 <code>ptrace</code> 可以访问和改变进程的内存和寄存器，所以只有具有足够权限的进程才能使用它。</p>
+<h3 id="gdb-断点的实现原理">GDB 断点的实现原理</h3>
+<p>在 GDB 中设置断点时，GDB 的确会将断点位置的指令替换为 <code>int 3</code>，这是一个触发 <code>SIGTRAP</code> 信号的特殊指令。此外，GDB 也会保存原来的指令和断点的信息，以便于在恢复执行时可以恢复原始的指令。</p>
+<p>当调试的程序运行到断点处并执行 <code>int 3</code> 指令时，<code>SIGTRAP</code> 信号会被触发并发送给 GDB。因为 GDB 已经通过 <code>ptrace</code> 建立了与调试程序的跟踪关系，所以它能够接收到这个信号。GDB 会检查这个信号来判断是否由一个断点引起的。这一判断是通过比较触发 <code>SIGTRAP</code> 的代码位置和已经设置的断点的位置来完成的。</p>
+<p>如果确定信号是由一个断点引起的，GDB 就会暂停程序执行，并等待用户输入命令来决定下一步操作。如果用户的命令是继续执行，GDB 就会先恢复断点位置的原始指令，然后让程序继续执行。</p>
+<h3 id="修改子进程内存">修改子进程内存</h3>
+<p>我们通过下面的例子来演示父进程如何修改子进程的内存:</p>
+<ul>
+<li>父进程创建子进程, 并先让子进程 sleep 一段时间以保证父进程能更早运行;</li>
+<li>父进程通过 <code>PTRACE_ATTACH</code> 来和子进程建立跟踪关系;</li>
+<li>父进程修改子进程的内存数据;</li>
+<li>父进程通过调用 <code>PTRACE_CONT</code> 让子进程恢复执行;</li>
+</ul>
+<p>完整代码如下：</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;sys/ptrace.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdint.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#define SHOW(call) ({ int _ret = (int)(call); printf(&#34;%s -&gt; %d\n&#34;, #call, _ret); if (_ret &lt; 0) { perror(NULL); }}) 
+</span><span class="cp"></span><span class="c1">// 定义一个宏来显示系统调用的结果，并在调用失败时打印错误信息
+</span><span class="c1"></span>
+<span class="kt">char</span> <span class="n">changeme</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;This is  a test&#34;</span><span class="p">;</span> <span class="c1">// 定义一个全局变量
+</span><span class="c1"></span>
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span> <span class="c1">// 创建子进程
+</span><span class="c1"></span>    <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="k">union</span> <span class="p">{</span>
+        <span class="kt">char</span> <span class="n">cdata</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+        <span class="n">int64_t</span> <span class="n">data</span><span class="p">;</span>
+    <span class="p">}</span> <span class="n">u</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#34;Hijacked&#34;</span> <span class="p">};</span> <span class="c1">// 定义一个联合体，用于存储要写入子进程内存的字符串
+</span><span class="c1"></span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="mi">0</span><span class="o">:</span> <span class="cm">/* child */</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">// 让子进程先睡眠2秒，这样父进程就有时间修改内存
+</span><span class="c1"></span>            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Children Message: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">changeme</span><span class="p">);</span> <span class="c1">// 子进程打印修改后的消息
+</span><span class="c1"></span>            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">case</span> <span class="o">-</span><span class="mi">1</span><span class="o">:</span>
+            <span class="n">perror</span><span class="p">(</span><span class="s">&#34;fork&#34;</span><span class="p">);</span> <span class="c1">// 创建子进程失败时打印错误信息并退出
+</span><span class="c1"></span>            <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+
+        <span class="k">default</span><span class="o">:</span> <span class="cm">/* parent */</span>
+            <span class="n">SHOW</span><span class="p">(</span><span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_ATTACH</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span> <span class="c1">// 父进程通过 ptrace 附加到子进程
+</span><span class="c1"></span>            <span class="n">SHOW</span><span class="p">(</span><span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_POKEDATA</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">changeme</span><span class="p">,</span> <span class="n">u</span><span class="p">.</span><span class="n">data</span><span class="p">));</span> <span class="c1">// 将新的字符串写入子进程的内存
+</span><span class="c1"></span>            <span class="n">SHOW</span><span class="p">(</span><span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_CONT</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span> <span class="c1">// 继续执行子进程
+</span><span class="c1"></span>            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Parent Message: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">changeme</span><span class="p">);</span> <span class="c1">// 父进程打印未被修改的消息
+</span><span class="c1"></span>            <span class="n">wait</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="c1">// 等待子进程退出
+</span><span class="c1"></span>            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">(</span>base<span class="o">)</span> czy@czy-307-thinkcentre-m720q-n000:CSAPP/bomb $ ./changeme 
+ptrace<span class="o">(</span>PTRACE_ATTACH, pid, 0, 0<span class="o">)</span> -&gt; <span class="m">0</span>
+ptrace<span class="o">(</span>PTRACE_POKEDATA, pid, changeme, u.data<span class="o">)</span> -&gt; <span class="m">0</span>
+ptrace<span class="o">(</span>PTRACE_CONT, pid, 0, 0<span class="o">)</span> -&gt; <span class="m">0</span>
+Parent Message: This is  a <span class="nb">test</span>
+Children Message: Hijacked a <span class="nb">test</span>
+</code></pre></div><p>可以看出子进程中的字符串已经被修改了, 而父进程中的字符串依旧保持不变.</p>
+<p>在调用 <code>ptrace(PTRACE_POKEDATA, pid, addr, data)</code> 时，第四个参数 <code>data</code> 的类型被假定为一个长整数 (<code>long</code>)，也就是说，系统默认 <code>data</code> 是 <code>long</code> 类型的数据。所以，不论在32位系统还是64位系统上，该参数都会以机器字长（word）的长度来处理。在64位系统中，<code>long</code> 类型通常就是64位，所以参数 <code>data</code> 被处理为64位。</p>
+<p>代码使用一个联合体 <code>u</code> 来存储字符串 <code>&quot;Hijacked&quot;</code>，然后通过 <code>u.data</code> 以 <code>int64_t</code> 类型传递这个字符串到 <code>ptrace()</code> 函数。这样，你就能够将8个字符（即64位数据）一次性写入目标进程的内存。这比逐个字符写入要高效。</p>
+<p>需要注意的是，字符串 <code>&quot;Hijacked&quot;</code> 必须是8个字符或少于8个字符，否则会溢出，导致 <code>data</code> 的数据不正确。同时，由于 <code>ptrace()</code> 是以机器字为单位进行操作，如果要写入的数据不足一个机器字的长度，需要进行适当的填充或处理。</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="c1">// example
+</span><span class="c1"></span><span class="k">union</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">cdata</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+    <span class="n">int64_t</span> <span class="n">data</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">u</span><span class="p">;</span>
+
+<span class="c1">// 将所有字节先初始化为0
+</span><span class="c1"></span><span class="n">memset</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">cdata</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">cdata</span><span class="p">));</span>
+
+<span class="c1">// 再拷贝&#34;Hijack&#34;字符串
+</span><span class="c1"></span><span class="n">strncpy</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">cdata</span><span class="p">,</span> <span class="s">&#34;Hijack&#34;</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="s">&#34;Hijack&#34;</span><span class="p">));</span>
+</code></pre></div><h2 id="reference">Reference</h2>
+<ol>
+<li><a href="http://csapp.cs.cmu.edu/2e/docs/gdbnotes-x86-64.pdf">http://csapp.cs.cmu.edu/2e/docs/gdbnotes-x86-64.pdf</a></li>
+<li><a href="https://en.wikipedia.org/wiki/GNU_Debugger">https://en.wikipedia.org/wiki/GNU_Debugger</a></li>
+<li><a href="https://hiberabyss.github.io/2018/04/04/gdb-internal/">https://hiberabyss.github.io/2018/04/04/gdb-internal/</a></li>
+<li><a href="https://blog.csdn.net/edonlii/article/details/8717029">https://blog.csdn.net/edonlii/article/details/8717029</a></li>
+<li>GPT-4</li>
+</ol></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-07-21</span>
+            </div><div class="post-info-license">
+                <span>CC 4.0 BY-SA</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/" data-title="GDB 速查表及原理简介" data-via="@solaris_linus" data-hashtags="GDB,Reverse engineering"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/" data-title="GDB 速查表及原理简介"><i class="fab fa-hacker-news fa-fw" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on Line" data-sharer="line" data-url="http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/" data-title="GDB 速查表及原理简介"><i data-svg-src="https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg" aria-hidden="true"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="http://example.org/posts/summary_of_gdb_commands_for_x86-64_systems/" data-title="GDB 速查表及原理简介"><i class="fab fa-weibo fa-fw" aria-hidden="true"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/gdb/">GDB</a>,&nbsp;<a href="/tags/reverse-engineering/">Reverse engineering</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/life_is_not_a_rat_rice/" class="prev" rel="prev" title="Life Is a Journey, Not a Rat-Race"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>Life Is a Journey, Not a Rat-Race</a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.68.3">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.11"><i class="far fa-kiss-wink-heart fa-fw" aria-hidden="true"></i> LoveIt</a>
+                </div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2022 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Solar1s</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-arrow-up fa-fw" aria-hidden="true"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
+            </a>
+        </div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/css/lightgallery-bundle.min.css"><script type="text/javascript" src="https://.disqus.com/embed.js" defer></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/lightgallery.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/thumbnail/lg-thumbnail.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/zoom/lg-zoom.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{},"lightgallery":true};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

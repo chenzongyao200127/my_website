@@ -3,20 +3,20 @@
         <title>Categories - Category - Solar1s&#39; Blog</title>
         <link>http://example.org/categories/</link>
         <description>Categories - Category - Solar1s&#39; Blog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</lastBuildDate><atom:link href="http://example.org/categories/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</lastBuildDate><atom:link href="http://example.org/categories/" rel="self" type="application/rss+xml" /><item>
+    <title>Security</title>
+    <link>http://example.org/categories/security/</link>
+    <pubDate>Fri, 21 Jul 2023 16:53:07 &#43;0800</pubDate>
+    <author>Solar1s</author>
+    <guid>http://example.org/categories/security/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Life</title>
     <link>http://example.org/categories/life/</link>
     <pubDate>Sun, 16 Jul 2023 20:22:34 &#43;0800</pubDate>
     <author>Solar1s</author>
     <guid>http://example.org/categories/life/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Security</title>
-    <link>http://example.org/categories/security/</link>
-    <pubDate>Fri, 14 Apr 2023 17:19:39 &#43;0800</pubDate>
-    <author>Solar1s</author>
-    <guid>http://example.org/categories/security/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>
